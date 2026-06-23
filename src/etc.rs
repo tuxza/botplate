@@ -1,19 +1,51 @@
+// use std::time::Instant;
 use sysinfo::System;
 
 pub struct SysInfo {
-    kernel: Option<String>,
-    os_vers: Option<String>,
-    used_memory: u64,
-    total_memory: u64,
+    pub os_name: Option<String>,
+    pub os_vers: Option<String>,
+    pub h_used_memory: u64,
+    pub h_total_memory: u64,
+    pub h_uptime: u64,
+    pub bot_memory: u64,
 }
 
 pub async fn get_sysinfo() -> SysInfo {
     let mut sys = System::new();
     sys.refresh_all();
+
+    let pid = sysinfo::get_current_pid().expect("fuck you, failed to get PID for some reason");
+
+    let bot_memory = sys.process(pid).map(|p| p.memory()).unwrap_or(0);
+
+    // h = host if you cant read
+
     SysInfo {
-        kernel: System::kernel_version(),
+        os_name: System::name(),
         os_vers: System::os_version(),
-        used_memory: sys.used_memory(),
-        total_memory: sys.total_memory(),
+        h_used_memory: sys.used_memory(),
+        h_total_memory: sys.total_memory(),
+        h_uptime: System::uptime(),
+        bot_memory,
     }
+}
+
+pub async fn convert_bytes_2_gigabytes(bytes: u64) -> String {
+    format!("{:.2} GB", bytes as f64 / 1024.0 / 1024.0 / 1024.0)
+}
+
+pub async fn convert_bytes_2_megabytes(bytes: u64) -> String {
+    format!("{:.2} MB", bytes as f64 / 1024.0 / 1024.0)
+}
+
+pub fn check_uptime(_start_time: &std::time::Instant) {
+    // let _uptime = start_time.elapsed();
+}
+
+pub async fn convert_uptime_2_human(uptime: u64) -> String {
+    let seconds = uptime % 60;
+    let minutes = (uptime / 60) % 60;
+    let hours = (uptime / 3600) % 24;
+    let days = uptime / 86400;
+    format!("{}d {}h {}m {}s", days, hours, minutes, seconds)
 }

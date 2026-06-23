@@ -1,9 +1,18 @@
 use poise::serenity_prelude as serenity;
 use std::time::Instant;
+
+pub struct Data {
+    pub start_time: std::time::Instant,
+}
+
 // use std::env;
 
 mod commands;
 mod etc;
+
+pub struct Time {
+    start: std::time::Instant,
+}
 
 #[tokio::main]
 async fn main() {
@@ -11,17 +20,21 @@ async fn main() {
     println!("starting botplate!");
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::general::ping(), commands::general::info()],
+            commands: vec![
+                commands::general::ping(),
+                commands::general::info(),
+                // commands::channels::create(),
+            ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("$".into()),
                 ..Default::default()
             },
             ..Default::default()
         })
-        .setup(|ctx, _ready, framework| {
+        .setup(move |ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(())
+                Ok(Data { start_time: start })
             })
         })
         .build();
@@ -40,6 +53,7 @@ async fn main() {
 
     println!("botplate started!");
     let elapsed_time = start.elapsed();
-    println!("Starting took: {} ms", elapsed_time.as_millis());
     client.start().await.unwrap();
+    println!("Starting took: {} ms", elapsed_time.as_millis());
+    etc::check_uptime(&start);
 }

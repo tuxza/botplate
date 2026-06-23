@@ -1,7 +1,11 @@
 use poise::serenity_prelude as serenity;
 
+use crate::etc;
+
 #[poise::command(prefix_command, slash_command)]
-pub async fn ping(ctx: poise::Context<'_, (), serenity::Error>) -> Result<(), serenity::Error> {
+pub async fn ping(
+    ctx: poise::Context<'_, crate::Data, serenity::Error>,
+) -> Result<(), serenity::Error> {
     let start = std::time::Instant::now();
 
     let msg = ctx.say("Pinging...!").await?;
@@ -32,12 +36,57 @@ pub async fn ping(ctx: poise::Context<'_, (), serenity::Error>) -> Result<(), se
 }
 
 #[poise::command(slash_command)]
-pub async fn info(ctx: poise::Context<'_, (), serenity::Error>) -> Result<(), serenity::Error> {
+pub async fn info(
+    ctx: poise::Context<'_, crate::Data, serenity::Error>,
+) -> Result<(), serenity::Error> {
+    let sys = etc::get_sysinfo().await;
+    let bot_uptime = ctx.data().start_time.elapsed().as_secs();
+
     let info_embed = serenity::CreateEmbed::new()
-        .title("testing!")
-        .description("shit embed")
-        // clear
-        // .field("uptime", format!("{}", uptime().as_secs()), false)
+        .title("botplate info")
+        .description("botplate is the finishing piece for a simulation of a low effort capitalist society for the town of baseplatia, handling everything from taxes, businesses, and jailing citizens.")
+        .field(
+            "Bot Uptime",
+            format!(
+                "{}",
+                etc::convert_uptime_2_human(bot_uptime).await
+            ),
+            false,
+        )
+        .field(
+            "Host Uptime",
+            format!(
+                "{}",
+                etc::convert_uptime_2_human(sys.h_uptime).await
+            ),
+            false,
+        )
+        .field(
+            "OS",
+            format!(
+                "{} {}",
+                sys.os_name.unwrap_or_else(|| "Unknown".to_string()),
+                sys.os_vers.unwrap_or_else(|| "Unknown".to_string())
+            ),
+            false,
+        )
+        .field(
+            "Bot Memory",
+            format!(
+                "{}",
+                etc::convert_bytes_2_megabytes(sys.bot_memory).await
+            ),
+            false,
+        )
+        .field(
+            "Host Memory",
+            format!(
+                "{} / {}",
+                etc::convert_bytes_2_gigabytes(sys.h_used_memory).await,
+                etc::convert_bytes_2_gigabytes(sys.h_total_memory).await
+            ),
+            false,
+        )
         .color(0x7289DA);
 
     let reply = poise::CreateReply::default().embed(info_embed);
@@ -45,45 +94,3 @@ pub async fn info(ctx: poise::Context<'_, (), serenity::Error>) -> Result<(), se
     ctx.send(reply).await?;
     Ok(())
 }
-
-/* async def info(interaction: discord.Interaction):
-"""Get information about the bot"""
-bot_uptime = datetime.now() - START_TIME
-hours, remainder = divmod(int(bot_uptime.total_seconds()), 3600)
-minutes, seconds = divmod(remainder, 60)
-days, hours = divmod(hours, 24)
-
-host_uptime_seconds = int(psutil.boot_time())
-host_uptime = datetime.now() - datetime.fromtimestamp(host_uptime_seconds)
-host_hours, host_remainder = divmod(int(host_uptime.total_seconds()), 3600)
-host_minutes, host_seconds = divmod(host_remainder, 60)
-host_days, host_hours = divmod(host_hours, 24)
-
-os_info = get_os_info()
-
-embed = discord.Embed(
-    title="some stuff about botplate:", color=discord.Color.blue()
-)
-embed.add_field(
-    name="what is botplate?",
-    value="botplate is the finishing piece for a simulation of a low effort capitalist society for the town of baseplate, handling everything from taxes, setting up a business, and jailing citizens. pretty much capitalism without the greed of the industrial revolution, and whatever dementija tells you about.",
-    inline=True,
-)
-embed.add_field(
-    name="bot version", value="warty warthog stable v2.00", inline=False
-)
-embed.add_field(
-    name="network latency", value=f"{round(bot.latency * 1000)}ms", inline=False
-)
-embed.add_field(
-    name="bot uptime", value=f"{days}d {hours}h {minutes}m {seconds}s", inline=False
-)
-embed.add_field(
-    name="host uptime",
-    value=f"{host_days}d {host_hours}h {host_minutes}m {host_seconds}s",
-    inline=False,
-)
-embed.add_field(name="host operating system", value=os_info, inline=False)
-embed.set_footer(text="this is actually modified code from bloxbot")
-
-await interaction.response.send_message(embed=embed) */
