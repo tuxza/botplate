@@ -10,13 +10,20 @@ pub struct Data {
 mod commands;
 mod etc;
 
-pub struct Time {
-    start: std::time::Instant,
+pub struct Uptime {
+    pub start_time: Instant,
+}
+
+impl Uptime {
+    pub fn get_uptime(&self) -> std::time::Duration {
+        self.start_time.elapsed()
+    }
 }
 
 #[tokio::main]
 async fn main() {
     let start = Instant::now();
+    let _uptime = Uptime { start_time: start };
     println!("starting botplate!");
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -55,5 +62,4 @@ async fn main() {
     let elapsed_time = start.elapsed();
     client.start().await.unwrap();
     println!("Starting took: {} ms", elapsed_time.as_millis());
-    etc::check_uptime(&start);
 }

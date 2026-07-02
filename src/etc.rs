@@ -38,10 +38,6 @@ pub async fn convert_bytes_2_megabytes(bytes: u64) -> String {
     format!("{:.2} MB", bytes as f64 / 1024.0 / 1024.0)
 }
 
-pub fn check_uptime(_start_time: &std::time::Instant) {
-    // let _uptime = start_time.elapsed();
-}
-
 pub async fn convert_uptime_2_human(uptime: u64) -> String {
     let seconds = uptime % 60;
     let minutes = (uptime / 60) % 60;
