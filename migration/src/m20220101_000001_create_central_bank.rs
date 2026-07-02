@@ -1,0 +1,75 @@
+use sea_orm::{DbBackend, Statement};
+use sea_orm_migration::prelude::*;
+
+#[derive(DeriveMigrationName)]
+pub struct Migration;
+
+#[async_trait::async_trait]
+impl MigrationTrait for Migration {
+    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .create_table(
+                Table::create()
+                    .table(CentralBank::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(CentralBank::Id)
+                            .integer()
+                            .not_null()
+                            .primary_key(),
+                    )
+                    .col(
+                        ColumnDef::new(CentralBank::Balance)
+                            .big_integer()
+                            .not_null(),
+                    )
+                    .to_owned(),
+            )
+            .await?;
+
+        // this is because i was a dumbass and stored the central bank in system_settings
+
+        manager
+            .get_connection()
+            .execute(Statement::from_string(
+                DbBackend::Sqlite,
+                r#"
+                INSERT INTO central_bank (id, balance)
+                SELECT
+                    1,
+                    CAST(value AS INTEGER)
+                FROM system_settings
+                WHERE key = 'central_bank';
+                "#
+                .into(),
+            ))
+            .await?;
+
+        manager
+            .get_connection()
+            .execute(Statement::from_string(
+                DbBackend::Sqlite,
+                r#"
+                INSERT OR IGNORE INTO central_bank (id, balance)
+                VALUES (1, 0);
+                "#
+                .into(),
+            ))
+            .await?;
+
+        Ok(())
+    }
+
+    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .drop_table(Table::drop().table(CentralBank::Table).to_owned())
+            .await
+    }
+}
+
+#[derive(Iden)]
+enum CentralBank {
+    Table,
+    Id,
+    Balance,
+}

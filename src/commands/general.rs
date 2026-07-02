@@ -1,4 +1,4 @@
-use poise::serenity_prelude::{self as serenity, EmbedFooter};
+use poise::serenity_prelude::{self as serenity};
 
 use crate::etc;
 
@@ -47,18 +47,12 @@ pub async fn info(
         .description("botplate is the finishing piece for a simulation of a low effort capitalist society for the town of baseplatia, handling everything from taxes, businesses, and jailing citizens.")
         .field(
             "Bot Uptime",
-            format!(
-                "{}",
-                etc::convert_uptime_2_human(bot_uptime).await
-            ),
+            etc::convert_uptime_2_human(bot_uptime).await.to_string(),
             false,
         )
         .field(
             "Host Uptime",
-            format!(
-                "{}",
-                etc::convert_uptime_2_human(sys.h_uptime).await
-            ),
+            etc::convert_uptime_2_human(sys.h_uptime).await.to_string(),
             false,
         )
         .field(
@@ -72,10 +66,7 @@ pub async fn info(
         )
         .field(
             "Bot Memory",
-            format!(
-                "{}",
-                etc::convert_bytes_2_megabytes(sys.bot_memory).await
-            ),
+            etc::convert_bytes_2_megabytes(sys.bot_memory).await.to_string(),
             false,
         )
         .field(
