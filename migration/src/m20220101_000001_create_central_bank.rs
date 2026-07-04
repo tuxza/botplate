@@ -40,8 +40,7 @@ impl MigrationTrait for Migration {
                     CAST(value AS INTEGER)
                 FROM system_settings
                 WHERE key = 'central_bank';
-                "#
-                .into(),
+                "#,
             ))
             .await?;
 
@@ -52,8 +51,7 @@ impl MigrationTrait for Migration {
                 r#"
                 INSERT OR IGNORE INTO central_bank (id, balance)
                 VALUES (1, 0);
-                "#
-                .into(),
+                "#,
             ))
             .await?;
 

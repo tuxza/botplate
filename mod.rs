@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod central_bank;
 pub mod channels;
 pub mod global_message_counts;
 pub mod guild_settings;

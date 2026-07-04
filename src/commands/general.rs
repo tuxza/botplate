@@ -44,7 +44,7 @@ pub async fn info(
 
     let info_embed = serenity::CreateEmbed::new()
         .title("botplate info")
-        .description("botplate is the finishing piece for a simulation of a low effort capitalist society for the town of baseplatia, handling everything from taxes, businesses, and jailing citizens.")
+        .description("botplate is the finishing piece for a simulation of a low effort capitalist society for the town of baseplatia, handling everything from taxes, businesses, and jailing citizens. tux this description is so ASS make a better one")
         .field(
             "Bot Uptime",
             etc::convert_uptime_2_human(bot_uptime).await.to_string(),
@@ -78,6 +78,7 @@ pub async fn info(
             ),
             false,
         )
+        .footer(etc::random_footer().await)
         .color(0x7289DA);
 
     let reply = poise::CreateReply::default().embed(info_embed);

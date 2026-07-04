@@ -12,12 +12,12 @@ path = "src/lib.rs"
 [dependencies]
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
 
-sea-orm = { version = "2.0.0-rc.41", features = [
+sea-orm = { version = "1.1.20", features = [
     "runtime-tokio",
     "sqlx-sqlite",
 ] }
 
-sea-orm-migration = { version = "2.0.0-rc.41", features = [
+sea-orm-migration = { version = "1.1.20", features = [
     "runtime-tokio",
     "sqlx-sqlite",
 ] }

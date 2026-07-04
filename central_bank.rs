@@ -3,12 +3,11 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "guild_settings")]
+#[sea_orm(table_name = "central_bank")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false, column_type = "Text", nullable)]
-    pub guild_id: Option<String>,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub log_channel_id: Option<String>,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub id: i32,
+    pub balance: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
