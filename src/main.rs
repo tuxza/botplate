@@ -1,13 +1,11 @@
 use poise::serenity_prelude as serenity;
-use sea_orm::{Database, DatabaseConnection}; // Added
+use sea_orm::{Database, DatabaseConnection};
 use std::time::Instant;
 
 pub struct Data {
     pub start_time: std::time::Instant,
-    pub database: DatabaseConnection, // Added
+    pub database: DatabaseConnection,
 }
-
-// use std::env;
 
 mod commands;
 mod etc;
@@ -54,9 +52,10 @@ async fn main() {
         })
         .build();
 
-    // for any SKIDS reading my git commits i changed the token after this commit go away
-    let token =
-        ("MTUxNzE4ODI5OTMyNjc1MDg2MA.GZbKJz.1y_uZ9cAxSIFA4_5MCw1545ScIYa5bvkp-dvTw").to_string();
+    dotenvy::dotenv().ok();
+
+    let token = std::env::var("DISCORD_TOKEN").expect("HEY DUMBASS WHERES THE TOKEN");
+
     let intents = serenity::GatewayIntents::GUILDS
         | serenity::GatewayIntents::GUILD_MESSAGES
         | serenity::GatewayIntents::DIRECT_MESSAGES
