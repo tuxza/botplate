@@ -3,7 +3,7 @@ use sea_orm::{Database, DatabaseConnection};
 use std::time::Instant;
 
 pub struct Data {
-    pub start_time: std::time::Instant,
+    pub start_time: Instant,
     pub database: DatabaseConnection,
 }
 
@@ -11,20 +11,12 @@ mod commands;
 mod etc;
 mod events;
 
-pub struct Uptime {
-    pub start_time: Instant,
-}
-
-impl Uptime {
-    pub fn get_uptime(&self) -> std::time::Duration {
-        self.start_time.elapsed()
-    }
-}
-
 #[tokio::main]
 async fn main() {
+    // Load .env first, before anything reads the environment.
+    dotenvy::dotenv().ok();
+
     let start = Instant::now();
-    let _uptime = Uptime { start_time: start };
     println!("starting botplate!");
 
     let db = Database::connect("sqlite://botplate.db?mode=rwc")
@@ -43,7 +35,8 @@ async fn main() {
         .setup(move |ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                events::bank::send_bank(&ctx.http).await.unwrap();
+                // Propagate errors instead of panicking startup.
+                events::bank::send_bank(&ctx.http).await?;
                 Ok(Data {
                     start_time: start,
                     database: db,
@@ -52,10 +45,7 @@ async fn main() {
         })
         .build();
 
-    dotenvy::dotenv().ok();
-
     let token = std::env::var("DISCORD_TOKEN").expect("HEY DUMBASS WHERES THE TOKEN");
-
     let intents = serenity::GatewayIntents::GUILDS
         | serenity::GatewayIntents::GUILD_MESSAGES
         | serenity::GatewayIntents::DIRECT_MESSAGES
@@ -66,8 +56,9 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("botplate started!");
     let elapsed_time = start.elapsed();
+    println!("botplate started!");
     println!("Starting took: {} ms", elapsed_time.as_millis());
+
     client.start().await.unwrap();
 }
