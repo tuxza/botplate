@@ -34,21 +34,6 @@ impl MigrationTrait for Migration {
             .execute(Statement::from_string(
                 DbBackend::Sqlite,
                 r#"
-                INSERT INTO central_bank (id, balance)
-                SELECT
-                    1,
-                    CAST(value AS INTEGER)
-                FROM system_settings
-                WHERE key = 'central_bank';
-                "#,
-            ))
-            .await?;
-
-        manager
-            .get_connection()
-            .execute(Statement::from_string(
-                DbBackend::Sqlite,
-                r#"
                 INSERT OR IGNORE INTO central_bank (id, balance)
                 VALUES (1, 0);
                 "#,

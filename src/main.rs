@@ -8,18 +8,18 @@ pub struct Data {
 }
 
 mod commands;
+mod entities;
 mod etc;
 mod events;
 
 #[tokio::main]
 async fn main() {
-    // Load .env first, before anything reads the environment.
     dotenvy::dotenv().ok();
 
     let start = Instant::now();
     println!("starting botplate!");
 
-    let db = Database::connect("sqlite://botplate.db?mode=rwc")
+    let db = Database::connect("sqlite://testing.db?mode=rwc")
         .await
         .expect("failed to connect to database! screw you!");
 
@@ -35,8 +35,8 @@ async fn main() {
         .setup(move |ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                // Propagate errors instead of panicking startup.
-                events::bank::send_bank(&ctx.http).await?;
+                let target_channel = serenity::ChannelId::new(1471369516612194314);
+                events::bank::send_bank_embed(&ctx.http, target_channel, &db).await?;
                 Ok(Data {
                     start_time: start,
                     database: db,
