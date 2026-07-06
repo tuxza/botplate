@@ -1,1 +1,1 @@
-pub mod bank;
+pub mod central_bank;

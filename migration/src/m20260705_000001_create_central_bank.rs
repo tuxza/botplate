@@ -27,8 +27,6 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        // this is because i was a dumbass and stored the central bank in system_settings
-
         manager
             .get_connection()
             .execute(Statement::from_string(

@@ -3,3 +3,4 @@
 pub mod prelude;
 
 pub mod central_bank;
+pub mod users;

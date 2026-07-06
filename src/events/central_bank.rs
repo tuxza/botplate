@@ -35,7 +35,7 @@ pub async fn send_bank_embed(
         .color(0xFFD700)
         .field(
             format!("what made the amount in the central bank?"),
-            "what a magic number.. basically, tuxzilla did a rough estimate of the value of everything in his house and now we're here ;l'",
+            "what a magic number.. basically, tuxzilla did a rough estimate of the value of everything in his house and now we're here",
             true,
         )
         .field(

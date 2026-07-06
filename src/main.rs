@@ -19,13 +19,17 @@ async fn main() {
     let start = Instant::now();
     println!("starting botplate!");
 
-    let db = Database::connect("sqlite://testing.db?mode=rwc")
+    let db = Database::connect("sqlite://testing.db?mode=rw")
         .await
         .expect("failed to connect to database! screw you!");
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::general::ping(), commands::general::info()],
+            commands: vec![
+                commands::general::ping(),
+                commands::general::info(),
+                commands::users::user::balance(),
+            ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("$".into()),
                 ..Default::default()
@@ -36,7 +40,7 @@ async fn main() {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 let target_channel = serenity::ChannelId::new(1471369516612194314);
-                events::bank::send_bank_embed(&ctx.http, target_channel, &db).await?;
+                events::central_bank::send_bank_embed(&ctx.http, target_channel, &db).await?;
                 Ok(Data {
                     start_time: start,
                     database: db,
