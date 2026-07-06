@@ -33,6 +33,11 @@ async fn main() {
                 prefix: Some("$".into()),
                 ..Default::default()
             },
+            event_handler: |ctx, event, framework, data| {
+                Box::pin(events::event_handler::event_handler(
+                    ctx, event, framework, data,
+                ))
+            },
             ..Default::default()
         })
         .setup(move |ctx, _ready, framework| {
@@ -51,8 +56,7 @@ async fn main() {
     let token = std::env::var("DISCORD_TOKEN").expect("HEY DUMBASS WHERES THE TOKEN");
     let intents = serenity::GatewayIntents::GUILDS
         | serenity::GatewayIntents::GUILD_MESSAGES
-        | serenity::GatewayIntents::DIRECT_MESSAGES
-        | serenity::GatewayIntents::MESSAGE_CONTENT;
+        | serenity::GatewayIntents::GUILD_MEMBERS;
 
     let mut client = serenity::ClientBuilder::new(token, intents)
         .framework(framework)
