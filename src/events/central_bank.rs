@@ -34,7 +34,7 @@ pub async fn send_bank_embed(
         .description(format!("tuxbux reserves: {}", central_bank))
         .color(0xFFD700)
         .field(
-            format!("what made the amount in the central bank?"),
+            "what made the amount in the central bank?".to_string(),
             "what a magic number.. basically, tuxzilla did a rough estimate of the value of everything in his house and now we're here",
             true,
         )

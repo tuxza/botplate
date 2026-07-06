@@ -14,7 +14,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(CentralBank::Id)
-                            .integer()
+                            .big_integer()
                             .not_null()
                             .primary_key(),
                     )

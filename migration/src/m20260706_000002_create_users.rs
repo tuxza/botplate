@@ -13,9 +13,8 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(Users::Id)
-                            .integer()
+                            .big_integer() // remember kids we're using sqlite! this TECHNICALLY doesnt matter! .. i do it anyways
                             .not_null()
-                            .auto_increment()
                             .primary_key(),
                     )
                     .col(

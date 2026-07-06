@@ -14,10 +14,9 @@ mod events;
 
 #[tokio::main]
 async fn main() {
-    dotenvy::dotenv().ok();
-
     let start = Instant::now();
     println!("starting botplate!");
+    dotenvy::dotenv().ok();
 
     let db = Database::connect("sqlite://testing.db?mode=rw")
         .await
