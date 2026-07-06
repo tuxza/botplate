@@ -1,1 +1,1 @@
-mod channels;
+mod shops;
