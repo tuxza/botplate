@@ -1,7 +1,6 @@
 use poise::serenity_prelude as serenity;
 
 pub async fn event_handler(
-    ctx: &serenity::Context,
     event: &serenity::FullEvent,
     _framework: poise::FrameworkContext<'_, crate::Data, serenity::Error>,
     _data: &crate::Data,

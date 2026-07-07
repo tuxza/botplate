@@ -33,10 +33,8 @@ async fn main() {
                 prefix: Some("$".into()),
                 ..Default::default()
             },
-            event_handler: |ctx, event, framework, data| {
-                Box::pin(events::event_handler::event_handler(
-                    ctx, event, framework, data,
-                ))
+            event_handler: |_ctx, event, framework, data| {
+                Box::pin(events::event_handler::event_handler(event, framework, data))
             },
             ..Default::default()
         })
