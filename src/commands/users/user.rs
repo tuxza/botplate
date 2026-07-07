@@ -12,7 +12,7 @@ pub async fn get_balance(author: &serenity::User, database: &DatabaseConnection)
         .unwrap_or_default();
 
     match user {
-        Some(token) => token.tokens.abs() as i64,
+        Some(token) => token.tokens.abs(),
         None => 0,
     }
 }
@@ -22,7 +22,7 @@ pub async fn balance(
     ctx: poise::Context<'_, crate::Data, serenity::Error>,
 ) -> Result<(), serenity::Error> {
     let author = ctx.author();
-    let balance = get_balance(&author, &ctx.data().database).await;
+    let balance = get_balance(author, &ctx.data().database).await;
     let _ = ctx.say(format!("Your balance is: {}", balance)).await?;
     Ok(())
 }

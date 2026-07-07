@@ -5,11 +5,8 @@ pub async fn event_handler(
     _framework: poise::FrameworkContext<'_, crate::Data, serenity::Error>,
     _data: &crate::Data,
 ) -> Result<(), serenity::Error> {
-    match event {
-        serenity::FullEvent::GuildMemberAddition { new_member } => {
-            on_guild_join(&_data.database, new_member).await?;
-        }
-        _ => {}
+    if let serenity::FullEvent::GuildMemberAddition { new_member } = event {
+        on_guild_join(&_data.database, new_member).await?;
     }
     Ok(())
 }
