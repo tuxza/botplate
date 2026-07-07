@@ -43,6 +43,9 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(0),
                     )
+                    .col(ColumnDef::new(Users::Spouse).big_integer())
+                    .col(ColumnDef::new(Users::SpouseSince).big_integer())
+                    .col(ColumnDef::new(Users::JointBalance).big_integer())
                     .to_owned(),
             )
             .await
@@ -65,4 +68,7 @@ enum Users {
     LastJob,
     XP,
     Level,
+    Spouse,
+    SpouseSince,
+    JointBalance,
 }
