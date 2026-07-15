@@ -3,27 +3,28 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "users")]
+#[sea_orm(table_name = "channels")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub id: i64,
-    pub tokens: i64,
-    pub debt: i64,
-    pub last_daily: Option<i64>,
-    pub last_job: Option<i64>,
-    pub xp: i64,
-    pub level: i64,
+    pub cid: i64,
+    pub uid: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::channels::Entity")]
-    Channels,
+    #[sea_orm(
+        belongs_to = "super::users::Entity",
+        from = "Column::Uid",
+        to = "super::users::Column::Id",
+        on_update = "Cascade",
+        on_delete = "Cascade"
+    )]
+    Users,
 }
 
-impl Related<super::channels::Entity> for Entity {
+impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Channels.def()
+        Relation::Users.def()
     }
 }
 
