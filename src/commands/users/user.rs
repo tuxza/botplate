@@ -11,3 +11,13 @@ pub async fn balance(
     let _ = ctx.say(format!("Your balance is: {}", balance)).await?;
     Ok(())
 }
+
+#[poise::command(prefix_command, slash_command)]
+pub async fn daily(
+    ctx: poise::Context<'_, crate::Data, serenity::Error>,
+) -> Result<(), serenity::Error> {
+    let author = ctx.author();
+    let _ = helpers::edit_balance(author, 100, &ctx.data().database).await;
+    let _ = ctx.say("Claimed 100 tokens!").await?;
+    Ok(())
+}
