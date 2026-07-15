@@ -18,7 +18,11 @@ async fn main() {
     println!("starting botplate!");
     dotenvy::dotenv().ok();
 
-    let db = Database::connect("sqlite://testing.db?mode=rw")
+    // this better?
+
+    let database_url = std::env::var("DATABASE_URL")
+        .expect("hey do you have DATABASE_URL in your env file?! you prolly should!");
+    let db = Database::connect(database_url)
         .await
         .expect("failed to connect to database! screw you!");
 
