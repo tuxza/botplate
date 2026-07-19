@@ -17,7 +17,17 @@ pub async fn daily(
     ctx: poise::Context<'_, crate::Data, serenity::Error>,
 ) -> Result<(), serenity::Error> {
     let author = ctx.author();
-    let _ = helpers::edit_balance(author, 100, &ctx.data().database).await;
-    let _ = ctx.say("Claimed 100 tokens!").await?;
+    let last = helpers::last_daily(author, &ctx.data().database).await;
+
+    if !helpers::can_claim_daily(last) {
+        ctx.say("you already claimed your daily today! come back later please.")
+            .await?;
+        return Ok(());
+    }
+
+    helpers::edit_balance(author, 100, &ctx.data().database).await;
+    helpers::set_last_daily(author, chrono::Utc::now().timestamp(), &ctx.data().database).await;
+
+    ctx.say("Claimed 100 tokens!").await?;
     Ok(())
 }
