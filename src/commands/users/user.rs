@@ -2,6 +2,7 @@ use poise::serenity_prelude::{self as serenity};
 
 use crate::commands::users::helpers;
 
+/// check your balance
 #[poise::command(prefix_command, slash_command)]
 pub async fn balance(
     ctx: poise::Context<'_, crate::Data, serenity::Error>,
@@ -12,6 +13,7 @@ pub async fn balance(
     Ok(())
 }
 
+/// claim your daily tuxbux
 #[poise::command(prefix_command, slash_command)]
 pub async fn daily(
     ctx: poise::Context<'_, crate::Data, serenity::Error>,
@@ -25,7 +27,7 @@ pub async fn daily(
         return Ok(());
     }
 
-    helpers::edit_balance(author, 100, &ctx.data().database).await;
+    helpers::edit_balance(author, 100, &ctx.data().database).await; // tux reminder: make this configurable because your so nice
     helpers::set_last_daily(author, chrono::Utc::now().timestamp(), &ctx.data().database).await;
 
     ctx.say("Claimed 100 tokens!").await?;
@@ -37,6 +39,7 @@ pub async fn daily(
 // obviously get_balance is used frequently LOL
 // but how OFTEN are you gambling that you need a whole ass function for it??
 
+/// gamble tuxbux with a 50/50 chance of winning or losing
 #[poise::command(prefix_command, slash_command)]
 pub async fn gamble(
     ctx: poise::Context<'_, crate::Data, serenity::Error>,

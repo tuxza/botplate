@@ -2,6 +2,9 @@ use poise::serenity_prelude::{self as serenity};
 
 use crate::etc;
 
+// tux reminder: this sucks make it better
+
+/// ping the bot to check latency
 #[poise::command(prefix_command, slash_command)]
 pub async fn ping(
     ctx: poise::Context<'_, crate::Data, serenity::Error>,
@@ -35,6 +38,7 @@ pub async fn ping(
     Ok(())
 }
 
+/// get information about botplate!
 #[poise::command(slash_command)]
 pub async fn info(
     ctx: poise::Context<'_, crate::Data, serenity::Error>,
@@ -44,7 +48,7 @@ pub async fn info(
 
     let info_embed = serenity::CreateEmbed::new()
         .title("botplate info")
-        .description("botplate is the finishing piece for a simulation of a low effort capitalist society for the town of baseplatia, handling everything from taxes, businesses, and jailing citizens. tux this description is so ASS make a better one")
+        .description("botplate is the finishing piece for a simulation of a low effort economy of the micronation of baseplate, handling everything from taxes, businesses, and jailing citizens. tux this description is so ASS make a better one")
         .field(
             "Bot Uptime",
             etc::convert_uptime_2_human(bot_uptime).await.to_string(),
