@@ -33,6 +33,7 @@ async fn main() {
                 commands::general::info(),
                 commands::users::user::balance(),
                 commands::users::user::daily(),
+                commands::users::user::gamble(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("$".into()),
