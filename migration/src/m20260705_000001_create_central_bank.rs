@@ -14,7 +14,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(CentralBank::Id)
-                            .integer()
+                            .big_integer()
                             .not_null()
                             .primary_key(),
                     )
@@ -25,23 +25,6 @@ impl MigrationTrait for Migration {
                     )
                     .to_owned(),
             )
-            .await?;
-
-        // this is because i was a dumbass and stored the central bank in system_settings
-
-        manager
-            .get_connection()
-            .execute(Statement::from_string(
-                DbBackend::Sqlite,
-                r#"
-                INSERT INTO central_bank (id, balance)
-                SELECT
-                    1,
-                    CAST(value AS INTEGER)
-                FROM system_settings
-                WHERE key = 'central_bank';
-                "#,
-            ))
             .await?;
 
         manager

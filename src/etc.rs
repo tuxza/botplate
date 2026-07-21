@@ -12,8 +12,23 @@ pub struct SysInfo {
     pub bot_memory: u64,
 }
 
-pub async fn fn_that_does_nothing() -> u64 {
+#[allow(dead_code)]
+pub async fn fn_that_returns_zero_lol() -> u64 {
     0
+}
+
+pub async fn make_numbers_pretty(num: u64) -> String {
+    let s = num.to_string();
+    let mut result = String::new();
+
+    for (i, ch) in s.chars().rev().enumerate() {
+        if i > 0 && i % 3 == 0 {
+            result.push(',');
+        }
+        result.push(ch);
+    }
+
+    result.chars().rev().collect()
 }
 
 pub async fn get_sysinfo() -> SysInfo {

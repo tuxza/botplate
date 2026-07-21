@@ -3,47 +3,52 @@ use sea_orm::{Database, DatabaseConnection};
 use std::time::Instant;
 
 pub struct Data {
-    pub start_time: std::time::Instant,
+    pub start_time: Instant,
     pub database: DatabaseConnection,
 }
 
 mod commands;
+mod entities;
 mod etc;
 mod events;
-
-pub struct Uptime {
-    pub start_time: Instant,
-}
-
-impl Uptime {
-    pub fn get_uptime(&self) -> std::time::Duration {
-        self.start_time.elapsed()
-    }
-}
 
 #[tokio::main]
 async fn main() {
     let start = Instant::now();
-    let _uptime = Uptime { start_time: start };
     println!("starting botplate!");
+    dotenvy::dotenv().ok();
 
-    let db = Database::connect("sqlite://botplate.db?mode=rwc")
+    // this better?
+
+    let database_url = std::env::var("DATABASE_URL")
+        .expect("hey do you have DATABASE_URL in your env file?! you prolly should!");
+    let db = Database::connect(database_url)
         .await
         .expect("failed to connect to database! screw you!");
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::general::ping(), commands::general::info()],
+            commands: vec![
+                commands::general::ping(),
+                commands::general::info(),
+                commands::users::user::balance(),
+                commands::users::user::daily(),
+                commands::users::user::gamble(),
+            ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("$".into()),
                 ..Default::default()
+            },
+            event_handler: |_ctx, event, framework, data| {
+                Box::pin(events::event_handler::event_handler(event, framework, data))
             },
             ..Default::default()
         })
         .setup(move |ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                events::bank::send_bank(&ctx.http).await.unwrap();
+                let target_channel = serenity::ChannelId::new(1471369516612194314);
+                events::central_bank::send_bank_embed(&ctx.http, target_channel, &db).await?;
                 Ok(Data {
                     start_time: start,
                     database: db,
@@ -52,22 +57,19 @@ async fn main() {
         })
         .build();
 
-    dotenvy::dotenv().ok();
-
     let token = std::env::var("DISCORD_TOKEN").expect("HEY DUMBASS WHERES THE TOKEN");
-
     let intents = serenity::GatewayIntents::GUILDS
         | serenity::GatewayIntents::GUILD_MESSAGES
-        | serenity::GatewayIntents::DIRECT_MESSAGES
-        | serenity::GatewayIntents::MESSAGE_CONTENT;
+        | serenity::GatewayIntents::GUILD_MEMBERS;
 
     let mut client = serenity::ClientBuilder::new(token, intents)
         .framework(framework)
         .await
         .unwrap();
 
-    println!("botplate started!");
     let elapsed_time = start.elapsed();
+    println!("botplate started!");
     println!("Starting took: {} ms", elapsed_time.as_millis());
+
     client.start().await.unwrap();
 }
