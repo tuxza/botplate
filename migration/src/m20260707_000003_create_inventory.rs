@@ -1,3 +1,4 @@
+use crate::m20260706_000002_create_users::Users;
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -9,13 +10,23 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table_name("inventory")
-                    .col(ColumnDef::new(Inventory::UID).big_integer().not_null())
+                    .table(Inventory::Table)
+                    .if_not_exists()
+                    .col(ColumnDef::new(Inventory::Uid).big_integer().not_null())
                     .col(ColumnDef::new(Inventory::Item).string().not_null())
                     .col(ColumnDef::new(Inventory::Description).string().not_null())
                     .col(ColumnDef::new(Inventory::Type).string().not_null())
                     .col(ColumnDef::new(Inventory::Price).decimal().not_null())
                     .col(ColumnDef::new(Inventory::Quantity).integer().not_null())
+                    .primary_key(Index::create().col(Inventory::Uid).col(Inventory::Item))
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-inventory-uid")
+                            .from(Inventory::Table, Inventory::Uid)
+                            .to(Users::Table, Users::Id)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
+                    )
                     .to_owned(),
             )
             .await
@@ -28,12 +39,13 @@ impl MigrationTrait for Migration {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityName)]
-struct Inventory {
-    uid: i64,
-    item: String,
-    description: String,
-    type_: String,
-    price: Decimal,
-    quantity: i32,
+#[derive(DeriveIden)]
+enum Inventory {
+    Table,
+    Uid,
+    Item,
+    Description,
+    Type,
+    Price,
+    Quantity,
 }
