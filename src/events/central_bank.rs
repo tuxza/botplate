@@ -4,7 +4,7 @@ use poise::serenity_prelude::ChannelId;
 use poise::serenity_prelude::CreateEmbed;
 use poise::serenity_prelude::CreateMessage;
 
-use crate::etc::make_numbers_pretty;
+use crate::global::make_numbers_pretty;
 
 use crate::entities;
 use sea_orm::DatabaseConnection;

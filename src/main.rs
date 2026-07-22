@@ -7,10 +7,11 @@ pub struct Data {
     pub database: DatabaseConnection,
 }
 
-mod commands;
 mod entities;
 mod etc;
 mod events;
+mod global;
+mod users;
 
 #[tokio::main]
 async fn main() {
@@ -29,11 +30,11 @@ async fn main() {
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: vec![
-                commands::general::ping(),
-                commands::general::info(),
-                commands::users::user::balance(),
-                commands::users::user::daily(),
-                commands::users::user::gamble(),
+                etc::general::ping(), // i should do that thing LLMs do where they give really obvious comments
+                etc::general::info(), // info command
+                users::user::balance(), // balance command
+                users::user::daily(), // daily command
+                users::user::gamble(), // gamble command
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("$".into()),

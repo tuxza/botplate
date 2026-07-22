@@ -1,6 +1,6 @@
 use poise::serenity_prelude::{self as serenity};
 
-use crate::commands::users::helpers;
+use crate::users::helpers;
 
 /// check your balance
 #[poise::command(prefix_command, slash_command)]
@@ -8,7 +8,7 @@ pub async fn balance(
     ctx: poise::Context<'_, crate::Data, serenity::Error>,
 ) -> Result<(), serenity::Error> {
     let author = ctx.author();
-    let balance = helpers::get_balance(author, &ctx.data().database).await;
+    let balance = helpers::get_balance(author.id.get() as i64, &ctx.data().database).await;
     let _ = ctx.say(format!("Your balance is: {}", balance)).await?;
     Ok(())
 }
@@ -19,7 +19,7 @@ pub async fn daily(
     ctx: poise::Context<'_, crate::Data, serenity::Error>,
 ) -> Result<(), serenity::Error> {
     let author = ctx.author();
-    let last = helpers::last_daily(author, &ctx.data().database).await;
+    let last = helpers::last_daily(author.id.get() as i64, &ctx.data().database).await;
 
     if !helpers::can_claim_daily(last) {
         ctx.say("you already claimed your daily today! come back later please.")
@@ -27,8 +27,13 @@ pub async fn daily(
         return Ok(());
     }
 
-    helpers::edit_balance(author, 100, &ctx.data().database).await; // tux reminder: make this configurable because your so nice
-    helpers::set_last_daily(author, chrono::Utc::now().timestamp(), &ctx.data().database).await;
+    helpers::edit_balance(author.id.get() as i64, 100, &ctx.data().database).await; // tux reminder: make this configurable because your so nice
+    helpers::set_last_daily(
+        author.id.get() as i64,
+        chrono::Utc::now().timestamp(),
+        &ctx.data().database,
+    )
+    .await;
 
     ctx.say("Claimed 100 tokens!").await?;
     Ok(())
@@ -46,7 +51,7 @@ pub async fn gamble(
     #[description = "how many tuxbux to gamble"] amount: i64,
 ) -> Result<(), serenity::Error> {
     let author = ctx.author();
-    let balance = helpers::get_balance(author, &ctx.data().database).await;
+    let balance = helpers::get_balance(author.id.get() as i64, &ctx.data().database).await;
     if amount <= 0 {
         ctx.say("you gotta gamble a positive amount, dummy.")
             .await?;
@@ -62,10 +67,10 @@ pub async fn gamble(
     }
     let won = rand::random::<bool>();
     if won {
-        helpers::edit_balance(author, amount, &ctx.data().database).await;
+        helpers::edit_balance(author.id.get() as i64, amount, &ctx.data().database).await;
         ctx.say(format!("you won! +{} tuxbux", amount)).await?;
     } else {
-        helpers::edit_balance(author, -amount, &ctx.data().database).await;
+        helpers::edit_balance(author.id.get() as i64, -amount, &ctx.data().database).await;
         ctx.say(format!("you lost! -{} tuxaroos", amount)).await?;
     }
     Ok(())
