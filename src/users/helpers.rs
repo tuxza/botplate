@@ -56,6 +56,17 @@ pub fn can_claim_daily(last_daily: Option<i64>) -> bool {
     now - last_claim >= 86_400
 }
 
+/// Sets the last daily claim timestamp for a user in the database.
+///
+/// # Arguments
+///
+/// * `user_id` - The ID of the user.
+/// * `timestamp` - The Unix timestamp of the last claim.
+/// * `database` - The database connection.
+///
+/// # Returns
+///
+/// * it returns nothing, lol.. i should fix that.
 pub async fn set_last_daily(user_id: i64, timestamp: i64, database: &DatabaseConnection) {
     let active_model = entities::users::ActiveModel {
         id: Set(user_id),
@@ -73,6 +84,16 @@ pub async fn set_last_daily(user_id: i64, timestamp: i64, database: &DatabaseCon
         .await;
 }
 
+/// Gets the balance of a user from the database.
+///
+/// # Arguments
+///
+/// * `user_id` - The ID of the user.
+/// * `database` - The database connection.
+///
+/// # Returns
+///
+/// The user's balance as an `i64` value.
 pub async fn get_balance(user_id: i64, database: &DatabaseConnection) -> i64 {
     entities::users::Entity::find_by_id(user_id)
         .one(database)
