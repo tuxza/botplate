@@ -145,6 +145,12 @@ pub async fn edit_balance(user_id: i64, amount: i64, database: &DatabaseConnecti
     }
 }
 
+/// Initializes a new user with the given ID and balance, inserting it into the database.
+///
+/// This function is called when a user does not exist in the database, and creates a new record with the given ID and balance. (which may have to be tweaked later.)
+
+// this is DEFINITELY not an elegant way to do such a thing
+// + this func might be added to global.. maybe.
 pub async fn init_new_user(user_id: i64, amount: i64, database: &DatabaseConnection) {
     let new_user = entities::users::ActiveModel {
         id: Set(user_id),
