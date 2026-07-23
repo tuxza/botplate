@@ -2,4 +2,6 @@
 
 pub use super::central_bank::Entity as CentralBank;
 pub use super::channels::Entity as Channels;
+pub use super::inventory::Entity as Inventory;
+pub use super::items::Entity as Items;
 pub use super::users::Entity as Users;

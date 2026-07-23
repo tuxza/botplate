@@ -3,17 +3,26 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "channels")]
+#[sea_orm(table_name = "inventory")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub cid: i64,
     pub uid: i64,
-    pub in_stock_market: bool,
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub item_id: i64,
+    pub quantity: i64,
+    pub acquired_price: i64,
+    pub can_resell: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::items::Entity")]
+    #[sea_orm(
+        belongs_to = "super::items::Entity",
+        from = "Column::ItemId",
+        to = "super::items::Column::Id",
+        on_update = "Cascade",
+        on_delete = "Cascade"
+    )]
     Items,
     #[sea_orm(
         belongs_to = "super::users::Entity",

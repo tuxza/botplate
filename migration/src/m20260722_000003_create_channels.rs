@@ -20,6 +20,12 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Channels::Uid).big_integer().not_null())
+                    .col(
+                        ColumnDef::new(Channels::InStockMarket)
+                            .boolean()
+                            .not_null()
+                            .default(false),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-4-channels-uid")
@@ -41,8 +47,9 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-enum Channels {
+pub enum Channels {
     Table,
     Cid,
     Uid,
+    InStockMarket,
 }

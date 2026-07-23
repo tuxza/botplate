@@ -3,24 +3,27 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "users")]
+#[sea_orm(table_name = "items")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub id: i64,
-    pub tokens: i64,
-    pub debt: i64,
-    pub last_daily: Option<i64>,
-    pub last_job: Option<i64>,
-    pub xp: i64,
-    pub level: i64,
-    pub spouse: Option<i64>,
-    pub spouse_since: Option<i64>,
-    pub joint_balance: Option<i64>,
+    #[sea_orm(primary_key)]
+    pub id: i32,
+    pub name: String,
+    pub description: String,
+    pub item_type: String,
+    pub quantity: i64,
+    pub price: i64,
+    pub origin_cid: Option<i64>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::channels::Entity")]
+    #[sea_orm(
+        belongs_to = "super::channels::Entity",
+        from = "Column::OriginCid",
+        to = "super::channels::Column::Cid",
+        on_update = "Cascade",
+        on_delete = "SetNull"
+    )]
     Channels,
     #[sea_orm(has_many = "super::inventory::Entity")]
     Inventory,
@@ -38,12 +41,12 @@ impl Related<super::inventory::Entity> for Entity {
     }
 }
 
-impl Related<super::items::Entity> for Entity {
+impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
-        super::inventory::Relation::Items.def()
+        super::inventory::Relation::Users.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(super::inventory::Relation::Users.def().rev())
+        Some(super::inventory::Relation::Items.def().rev())
     }
 }
 

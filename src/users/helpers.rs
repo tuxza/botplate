@@ -4,7 +4,9 @@
  */
 
 use crate::entities;
-use sea_orm::{ActiveValue::Set, DatabaseConnection, EntityTrait, sea_query::OnConflict};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue::Set, DatabaseConnection, EntityTrait, sea_query::OnConflict,
+};
 
 /// Fetches a Unix timestamp of when the user last claimed their daily reward.
 ///
@@ -126,8 +128,24 @@ pub async fn get_balance(user_id: i64, database: &DatabaseConnection) -> i64 {
 /// edit_balance(123456789, -150, &db).await;
 /// ```
 pub async fn edit_balance(user_id: i64, amount: i64, database: &DatabaseConnection) {
-    use sea_orm::sea_query::Expr;
+    let user = entities::users::Entity::find_by_id(user_id)
+        .one(database)
+        .await
+        .unwrap_or(None);
 
+    match user {
+        Some(model) => {
+            let mut active_model: entities::users::ActiveModel = model.into();
+            active_model.tokens = Set(active_model.tokens.unwrap() + amount);
+            let _ = active_model.update(database).await.unwrap();
+        }
+        None => {
+            init_new_user(user_id, amount, database).await;
+        }
+    }
+}
+
+pub async fn init_new_user(user_id: i64, amount: i64, database: &DatabaseConnection) {
     let new_user = entities::users::ActiveModel {
         id: Set(user_id),
         tokens: Set(amount),
@@ -136,17 +154,9 @@ pub async fn edit_balance(user_id: i64, amount: i64, database: &DatabaseConnecti
         last_job: Set(None),
         xp: Set(0),
         level: Set(0),
+        spouse: Set(None),
+        spouse_since: Set(None),
+        joint_balance: Set(None),
     };
-
-    let _ = entities::users::Entity::insert(new_user)
-        .on_conflict(
-            OnConflict::column(entities::users::Column::Id)
-                .value(
-                    entities::users::Column::Tokens,
-                    Expr::col(entities::users::Column::Tokens).add(amount),
-                )
-                .to_owned(),
-        )
-        .exec(database)
-        .await;
+    let _ = new_user.insert(database).await;
 }
