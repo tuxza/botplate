@@ -1,5 +1,5 @@
 use crate::channels::helpers;
-use poise::serenity_prelude::{self as serenity};
+use poise::serenity_prelude::{self as serenity, ChannelId, Mentionable};
 
 /// create a new shop
 #[poise::command(slash_command)]
@@ -10,7 +10,9 @@ pub async fn new_shop(
     let guild_id = ctx.guild().unwrap().id;
     let user_id = ctx.author().id;
 
-    helpers::create_new_shop(&ctx.http(), guild_id, user_id, channel_name).await?;
+    let channel_id = helpers::create_new_shop(&ctx.http(), guild_id, user_id, channel_name).await?;
 
+    ctx.say(format!("shop created! {}", channel_id.mention()))
+        .await?;
     Ok(())
 }
