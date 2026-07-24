@@ -1,14 +1,16 @@
-/*use poise::serenity_prelude as serenity;
+use crate::channels::helpers;
+use poise::serenity_prelude::{self as serenity};
 
+/// create a new shop
 #[poise::command(slash_command)]
-pub async fn create(
-    ctx: poise::Context<'_>,
-    #[description = "name for your channel"] channel_name: String,
+pub async fn new_shop(
+    ctx: poise::Context<'_, crate::Data, serenity::Error>,
+    #[description = "The name of your new business"] channel_name: String,
 ) -> Result<(), serenity::Error> {
-    ctx.defer().await?;
+    let guild_id = ctx.guild().unwrap().id;
+    let user_id = ctx.author().id;
 
-    let user_id = ctx.author().id.to_string();
+    helpers::create_new_shop(&ctx.http(), guild_id, user_id, channel_name).await?;
 
     Ok(())
 }
-*/

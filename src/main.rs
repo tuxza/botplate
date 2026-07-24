@@ -7,6 +7,7 @@ pub struct Data {
     pub database: DatabaseConnection,
 }
 
+mod channels;
 mod entities;
 mod etc;
 mod events;
@@ -35,6 +36,7 @@ async fn main() {
                 users::user::balance(), // balance command
                 users::user::daily(), // daily command
                 users::user::gamble(), // gamble command
+                channels::shops::new_shop(), // new shop command
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("$".into()),
