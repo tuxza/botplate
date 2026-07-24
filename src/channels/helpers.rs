@@ -31,12 +31,7 @@ pub async fn create_new_shop(
         create_channel = create_channel.category(cat_id);
     }
 
-    guild_id
-        .create_channel(http, create_channel.clone())
-        .await?;
-
     let new_channel = guild_id.create_channel(http, create_channel).await?;
-
     Ok(new_channel.id)
 }
 

@@ -14,5 +14,13 @@ pub async fn new_shop(
 
     ctx.say(format!("shop created! {}", channel_id.mention()))
         .await?;
+
+    let shop = channel_id;
+    shop.send_message(
+        ctx.http(),
+        serenity::CreateMessage::new()
+            .content(format!("welcome to your new shop! {}", user_id.mention())),
+    )
+    .await?;
     Ok(())
 }
