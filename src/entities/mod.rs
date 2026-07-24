@@ -4,4 +4,6 @@ pub mod prelude;
 
 pub mod central_bank;
 pub mod channels;
+pub mod inventory;
+pub mod items;
 pub mod users;

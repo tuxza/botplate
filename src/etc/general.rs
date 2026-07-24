@@ -1,6 +1,7 @@
 use poise::serenity_prelude::{self as serenity};
 
-use crate::etc;
+use crate::etc::helpers;
+use crate::global;
 
 // tux reminder: this sucks make it better
 
@@ -43,7 +44,7 @@ pub async fn ping(
 pub async fn info(
     ctx: poise::Context<'_, crate::Data, serenity::Error>,
 ) -> Result<(), serenity::Error> {
-    let sys = etc::get_sysinfo().await;
+    let sys = helpers::get_sysinfo().await;
     let bot_uptime = ctx.data().start_time.elapsed().as_secs();
 
     let info_embed = serenity::CreateEmbed::new()
@@ -51,12 +52,12 @@ pub async fn info(
         .description("botplate is the finishing piece for a simulation of a low effort economy of the micronation of baseplate, handling everything from taxes, businesses, and jailing citizens. tux this description is so ASS make a better one")
         .field(
             "Bot Uptime",
-            etc::convert_uptime_2_human(bot_uptime).await.to_string(),
+            helpers::convert_uptime_2_human(bot_uptime).await.to_string(),
             false,
         )
         .field(
             "Host Uptime",
-            etc::convert_uptime_2_human(sys.h_uptime).await.to_string(),
+            helpers::convert_uptime_2_human(sys.h_uptime).await.to_string(),
             false,
         )
         .field(
@@ -70,19 +71,19 @@ pub async fn info(
         )
         .field(
             "Bot Memory",
-            etc::convert_bytes_2_megabytes(sys.bot_memory).await.to_string(),
+            helpers::convert_bytes_2_megabytes(sys.bot_memory).await.to_string(),
             false,
         )
         .field(
             "Host Memory",
             format!(
                 "{} / {}",
-                etc::convert_bytes_2_gigabytes(sys.h_used_memory).await,
-                etc::convert_bytes_2_gigabytes(sys.h_total_memory).await
+                helpers::convert_bytes_2_gigabytes(sys.h_used_memory).await,
+                helpers::convert_bytes_2_gigabytes(sys.h_total_memory).await
             ),
             false,
         )
-        .footer(etc::random_footer().await)
+        .footer(global::random_footer().await)
         .color(0x7289DA);
 
     let reply = poise::CreateReply::default().embed(info_embed);

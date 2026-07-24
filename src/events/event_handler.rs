@@ -28,3 +28,5 @@ pub async fn on_guild_join(
     println!("User {} joined the guild.", new_member.user.name);
     Ok(())
 }
+
+// tux reminder, this works.. make a function that does something with it
