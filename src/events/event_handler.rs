@@ -1,10 +1,12 @@
 use poise::serenity_prelude as serenity;
 
+use crate::errors::Error;
+
 pub async fn event_handler(
     event: &serenity::FullEvent,
-    _framework: poise::FrameworkContext<'_, crate::Data, serenity::Error>,
+    _framework: poise::FrameworkContext<'_, crate::Data, Error>,
     _data: &crate::Data,
-) -> Result<(), serenity::Error> {
+) -> Result<(), Error> {
     if let serenity::FullEvent::GuildMemberAddition { new_member } = event {
         on_guild_join(&_data.database, new_member).await?;
     }
@@ -17,7 +19,7 @@ use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
 pub async fn on_guild_join(
     db: &DatabaseConnection,
     new_member: &serenity::Member,
-) -> Result<(), serenity::Error> {
+) -> Result<(), Error> {
     let user = entities::users::ActiveModel {
         id: Set(new_member.user.id.get() as i64),
         tokens: Set(0),

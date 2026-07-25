@@ -14,6 +14,8 @@ mod events;
 mod global;
 mod users;
 
+mod errors;
+
 #[tokio::main]
 async fn main() {
     let start = Instant::now();
