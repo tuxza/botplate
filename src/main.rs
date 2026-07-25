@@ -38,7 +38,7 @@ async fn main() {
                 users::user::balance(), // balance command
                 users::user::daily(), // daily command
                 users::user::gamble(), // gamble command
-                channels::shops::new_shop(), // new shop command
+                channels::shops::create(), // creation stuff
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("$".into()),

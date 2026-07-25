@@ -9,8 +9,14 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::Database(e) => write!(f, "database error: {e}"),
-            Error::Discord(e) => write!(f, "discord error: {e}"),
+            Error::Database(e) => write!(
+                f,
+                "database error: {e} please report this [here](https://tuxzilla.com/squash-a-bug) through proper channels"
+            ),
+            Error::Discord(e) => write!(
+                f,
+                "discord error: {e} please report this [here](https://tuxzilla.com/squash-a-bug) through proper channels"
+            ),
         }
     }
 }
