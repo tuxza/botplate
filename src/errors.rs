@@ -4,6 +4,7 @@ use std::fmt;
 pub enum Error {
     Database(sea_orm::DbErr),
     Discord(poise::serenity_prelude::Error),
+    Custom(std::string::String),
 }
 
 impl fmt::Display for Error {
@@ -17,6 +18,7 @@ impl fmt::Display for Error {
                 f,
                 "discord error: {e} please report this [here](https://tuxzilla.com/squash-a-bug) through proper channels"
             ),
+            Error::Custom(e) => write!(f, "{e}"),
         }
     }
 }
@@ -32,5 +34,11 @@ impl From<sea_orm::DbErr> for Error {
 impl From<poise::serenity_prelude::Error> for Error {
     fn from(e: poise::serenity_prelude::Error) -> Self {
         Error::Discord(e)
+    }
+}
+
+impl From<std::string::String> for Error {
+    fn from(e: std::string::String) -> Self {
+        Error::Custom(e)
     }
 }

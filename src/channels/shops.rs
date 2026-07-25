@@ -17,7 +17,14 @@ pub async fn shop(
     let guild_id = ctx.guild().unwrap().id;
     let user_id = ctx.author().id;
 
-    let channel_id = helpers::create_new_shop(ctx.http(), guild_id, user_id, channel_name).await?;
+    let channel_id = helpers::create_new_shop(
+        ctx.http(),
+        guild_id,
+        user_id,
+        channel_name,
+        &ctx.data().database,
+    )
+    .await?;
 
     ctx.say(format!("shop created! {}", channel_id.mention()))
         .await?;
