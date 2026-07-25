@@ -10,13 +10,13 @@ use poise::serenity_prelude::{self as serenity, Mentionable};
 
 /// manage your shops
 #[poise::command(slash_command, prefix_command, subcommands("shop"))]
-pub async fn create(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+pub async fn shop(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     Ok(())
 }
 
 /// create a new shop
 #[poise::command(slash_command, prefix_command)]
-pub async fn shop(
+pub async fn create(
     ctx: poise::Context<'_, crate::Data, Error>,
     #[description = "The name of your new business"] channel_name: String,
 ) -> Result<(), Error> {

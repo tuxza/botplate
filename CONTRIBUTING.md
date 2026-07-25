@@ -133,7 +133,7 @@ Wow, look at you! You're already doing that!
 
 We use SQLite, so just name a file 'botplate.db' (or whatever.) and point your .env file to it.
 
-(if you need an example of an .env file, see [.env.example](https://github.com/tuxzilla/botplate/blob/main/.env.example))
+(if you need an example of an .env file, see [.env.example](https://github.com/tuxza/botplate/blob/main/.env.example))
 
 5. Run SeaORM migrations:
 
