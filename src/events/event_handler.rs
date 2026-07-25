@@ -1,3 +1,9 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// /src/events/event_handler.rs
+
 use poise::serenity_prelude as serenity;
 
 use crate::errors::Error;

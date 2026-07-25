@@ -1,3 +1,9 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// src/errors.rs
+
 use std::fmt;
 
 #[derive(Debug)]

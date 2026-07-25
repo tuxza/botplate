@@ -1,3 +1,9 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// /src/etc/general.rs
+
 use poise::serenity_prelude::{self as serenity};
 
 use crate::etc::helpers;

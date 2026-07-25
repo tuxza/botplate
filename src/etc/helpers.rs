@@ -1,4 +1,9 @@
-// use std::time::Instant;
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// /src/etc/helpers.rs
+
 use sysinfo::System;
 
 pub struct SysInfo {

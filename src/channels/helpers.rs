@@ -1,3 +1,9 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// src/channels/helpers.rs
+
 use poise::serenity_prelude as serenity;
 use sea_orm::DatabaseConnection;
 use serenity::builder::CreateChannel;

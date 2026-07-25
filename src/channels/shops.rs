@@ -1,3 +1,9 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// src/channels/shops.rs
+
 use crate::channels::helpers;
 use crate::errors::Error;
 use poise::serenity_prelude::{self as serenity, Mentionable};

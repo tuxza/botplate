@@ -1,3 +1,9 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// This is the main file, if you'd like to contribute to botplate, please read the CONTRIBUTING.md file.
+
 use poise::serenity_prelude as serenity;
 use sea_orm::{Database, DatabaseConnection};
 use std::time::Instant;
@@ -9,20 +15,17 @@ pub struct Data {
 
 mod channels;
 mod entities;
+mod errors;
 mod etc;
 mod events;
 mod global;
 mod users;
-
-mod errors;
 
 #[tokio::main]
 async fn main() {
     let start = Instant::now();
     println!("starting botplate!");
     dotenvy::dotenv().ok();
-
-    // this better?
 
     let database_url = std::env::var("DATABASE_URL")
         .expect("hey do you have DATABASE_URL in your env file?! you prolly should!");
@@ -33,12 +36,12 @@ async fn main() {
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: vec![
-                etc::general::ping(), // i should do that thing LLMs do where they give really obvious comments
-                etc::general::info(), // info command
-                users::user::balance(), // balance command
-                users::user::daily(), // daily command
-                users::user::gamble(), // gamble command
-                channels::shops::create(), // creation stuff
+                etc::general::ping(),
+                etc::general::info(),
+                users::user::balance(),
+                users::user::daily(),
+                users::user::gamble(),
+                channels::shops::create(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("$".into()),

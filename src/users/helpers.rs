@@ -1,7 +1,8 @@
-/* This is the helpers.rs file. This file containers helper functions for user related operations
- * to call any of these functions, pass their related arguments.
- * To contribute to botplate, please read README.md in this directory.
- */
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+// src/users/helpers.rs
 
 use crate::entities::prelude::Users;
 use crate::entities::types::*;
