@@ -1,11 +1,14 @@
-/* This is the helpers.rs file. This file containers helper functions for user related operations
- * to call any of these functions, pass their related arguments.
- * To contribute to botplate, please read README.md in this directory.
- */
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
-use crate::entities;
+// src/users/helpers.rs
+
+use crate::entities::prelude::Users;
+use crate::entities::types::*;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue::Set, DatabaseConnection, EntityTrait, sea_query::OnConflict,
+    ActiveModelTrait, ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait,
+    sea_query::OnConflict,
 };
 
 /// Fetches a Unix timestamp of when the user last claimed their daily reward.
@@ -29,7 +32,7 @@ use sea_orm::{
 /// }
 /// ```
 pub async fn last_daily(user_id: i64, database: &DatabaseConnection) -> Option<i64> {
-    entities::users::Entity::find_by_id(user_id)
+    Users::find_by_id(user_id)
         .one(database)
         .await
         .ok()
@@ -70,16 +73,16 @@ pub fn can_claim_daily(last_daily: Option<i64>) -> bool {
 ///
 /// * it returns nothing, lol.. i should fix that.
 pub async fn set_last_daily(user_id: i64, timestamp: i64, database: &DatabaseConnection) {
-    let active_model = entities::users::ActiveModel {
+    let active_model = UsersActiveModel {
         id: Set(user_id),
         last_daily: Set(Some(timestamp)),
         ..Default::default()
     };
 
-    let _ = entities::users::Entity::insert(active_model)
+    let _ = Users::insert(active_model)
         .on_conflict(
-            OnConflict::column(entities::users::Column::Id)
-                .update_column(entities::users::Column::LastDaily)
+            OnConflict::column(UsersColumn::Id)
+                .update_column(UsersColumn::LastDaily)
                 .to_owned(),
         )
         .exec(database)
@@ -97,7 +100,7 @@ pub async fn set_last_daily(user_id: i64, timestamp: i64, database: &DatabaseCon
 ///
 /// The user's balance as an `i64` value.
 pub async fn get_balance(user_id: i64, database: &DatabaseConnection) -> i64 {
-    entities::users::Entity::find_by_id(user_id)
+    Users::find_by_id(user_id)
         .one(database)
         .await
         .ok()
@@ -127,32 +130,40 @@ pub async fn get_balance(user_id: i64, database: &DatabaseConnection) -> i64 {
 /// // Deduct 150 tokens
 /// edit_balance(123456789, -150, &db).await;
 /// ```
-pub async fn edit_balance(user_id: i64, amount: i64, database: &DatabaseConnection) {
-    let user = entities::users::Entity::find_by_id(user_id)
-        .one(database)
-        .await
-        .unwrap_or(None);
+pub async fn edit_balance(
+    user_id: i64,
+    amount: i64,
+    database: &DatabaseConnection,
+) -> Result<(), DbErr> {
+    let user = Users::find_by_id(user_id).one(database).await?;
 
     match user {
         Some(model) => {
-            let mut active_model: entities::users::ActiveModel = model.into();
-            active_model.tokens = Set(active_model.tokens.unwrap() + amount);
-            let _ = active_model.update(database).await.unwrap();
+            let mut active_model: UsersActiveModel = model.clone().into();
+
+            active_model.tokens = Set(model.tokens + amount);
+            let _ = Users::update(active_model).exec(database).await?;
         }
         None => {
-            init_new_user(user_id, amount, database).await;
+            init_new_user(user_id, amount, database).await?;
         }
     }
+
+    Ok(())
 }
+
+// this is DEFINITELY not an elegant way to do such a thing
+// + this func might be added to global.. maybe
 
 /// Initializes a new user with the given ID and balance, inserting it into the database.
 ///
-/// This function is called when a user does not exist in the database, and creates a new record with the given ID and balance. (which may have to be tweaked later.)
-
-// this is DEFINITELY not an elegant way to do such a thing
-// + this func might be added to global.. maybe.
-pub async fn init_new_user(user_id: i64, amount: i64, database: &DatabaseConnection) {
-    let new_user = entities::users::ActiveModel {
+/// This function is called when a user does not exist in the database, and creates a new record with the given ID and balance. (which may have to be tweaked later.).
+pub async fn init_new_user(
+    user_id: i64,
+    amount: i64,
+    database: &DatabaseConnection,
+) -> Result<(), DbErr> {
+    let new_user = UsersActiveModel {
         id: Set(user_id),
         tokens: Set(amount),
         debt: Set(0),
@@ -165,4 +176,6 @@ pub async fn init_new_user(user_id: i64, amount: i64, database: &DatabaseConnect
         joint_balance: Set(None),
     };
     let _ = new_user.insert(database).await;
+
+    Ok(())
 }

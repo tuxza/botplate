@@ -1,3 +1,9 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// /src/events/central_bank.rs
+
 use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::ChannelId;
 

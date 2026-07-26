@@ -1,4 +1,11 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// src/channels/helpers.rs
+
 use poise::serenity_prelude as serenity;
+use sea_orm::DatabaseConnection;
 use serenity::builder::CreateChannel;
 use serenity::http::Http;
 use serenity::model::channel::{
@@ -8,31 +15,53 @@ use serenity::model::id::{ChannelId, GuildId, UserId};
 use serenity::model::permissions::Permissions;
 use std::collections::HashMap;
 
-pub async fn create_new_shop(
+use crate::channels::db::*;
+use crate::errors::Error;
+
+pub async fn create_shop(
     http: &Http,
     guild_id: GuildId,
     user_id: UserId,
     channel_name: String,
-) -> Result<ChannelId, serenity::Error> {
+    database: &DatabaseConnection,
+) -> Result<ChannelId, Error> {
+    if db_user_has_shop(user_id, database).await? {
+        return Err(Error::Custom("you already own a shop!".into()));
+    }
     let channels = guild_id.channels(http).await?;
     let category_id = check_category(http, guild_id, &channels, "shops").await?;
-
     let user_overwrites = PermissionOverwrite {
         allow: Permissions::MANAGE_CHANNELS | Permissions::VIEW_CHANNEL,
         deny: Permissions::empty(),
         kind: PermissionOverwriteType::Member(user_id),
     };
-
     let mut create_channel = CreateChannel::new(&channel_name)
         .kind(ChannelType::Text)
         .permissions(vec![user_overwrites]);
-
     if let Some(cat_id) = category_id {
         create_channel = create_channel.category(cat_id);
     }
-
     let new_channel = guild_id.create_channel(http, create_channel).await?;
+    db_create_channel(new_channel.id, user_id, database).await?;
     Ok(new_channel.id)
+}
+
+pub async fn delete_shop(
+    http: &Http,
+    user_id: UserId,
+    database: &DatabaseConnection,
+) -> Result<(), Error> {
+    let audit_log_reason = "Deleted by user.";
+
+    let Some(channel_id) = db_get_shop_channel_id(user_id, database).await? else {
+        return Err(Error::Custom("you don't own a shop!".into()));
+    };
+
+    db_delete_shop(user_id, database).await?;
+    http.delete_channel(channel_id, Some(audit_log_reason))
+        .await?;
+
+    Ok(())
 }
 
 pub async fn check_category(

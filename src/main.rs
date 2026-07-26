@@ -1,3 +1,9 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// This is the main file, if you'd like to contribute to botplate, please read the CONTRIBUTING.md file.
+
 use poise::serenity_prelude as serenity;
 use sea_orm::{Database, DatabaseConnection};
 use std::time::Instant;
@@ -5,10 +11,13 @@ use std::time::Instant;
 pub struct Data {
     pub start_time: Instant,
     pub database: DatabaseConnection,
+    pub admins: i64,
 }
 
+mod admin;
 mod channels;
 mod entities;
+mod errors;
 mod etc;
 mod events;
 mod global;
@@ -20,26 +29,32 @@ async fn main() {
     println!("starting botplate!");
     dotenvy::dotenv().ok();
 
-    // this better?
-
     let database_url = std::env::var("DATABASE_URL")
         .expect("hey do you have DATABASE_URL in your env file?! you prolly should!");
     let db = Database::connect(database_url)
         .await
         .expect("failed to connect to database! screw you!");
 
+    let admins = std::env::var("ADMIN")
+        // look at this lazy bum copying the same error message!
+        .expect("hey do you have ADMIN in your env file?! you prolly should!");
+
+    let admins: i64 = admins.parse().unwrap();
+
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: vec![
-                etc::general::ping(), // i should do that thing LLMs do where they give really obvious comments
-                etc::general::info(), // info command
-                users::user::balance(), // balance command
-                users::user::daily(), // daily command
-                users::user::gamble(), // gamble command
-                channels::shops::new_shop(), // new shop command
+                etc::general::ping(),
+                etc::general::info(),
+                users::user::balance(),
+                users::user::daily(),
+                users::user::gamble(),
+                channels::shops::shop(),
+                admin::commands::rule(),
+                admin::commands::resend_rules(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
-                prefix: Some("$".into()),
+                prefix: Some("b.".into()),
                 ..Default::default()
             },
             event_handler: |_ctx, event, framework, data| {
@@ -55,6 +70,7 @@ async fn main() {
                 Ok(Data {
                     start_time: start,
                     database: db,
+                    admins,
                 })
             })
         })
@@ -63,7 +79,8 @@ async fn main() {
     let token = std::env::var("DISCORD_TOKEN").expect("HEY DUMBASS WHERES THE TOKEN");
     let intents = serenity::GatewayIntents::GUILDS
         | serenity::GatewayIntents::GUILD_MESSAGES
-        | serenity::GatewayIntents::GUILD_MEMBERS;
+        | serenity::GatewayIntents::GUILD_MEMBERS
+        | serenity::GatewayIntents::MESSAGE_CONTENT;
 
     let mut client = serenity::ClientBuilder::new(token, intents)
         .framework(framework)

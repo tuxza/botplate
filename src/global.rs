@@ -1,5 +1,17 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// src/global.rs
+
 use poise::serenity_prelude::CreateEmbedFooter;
 use rand::prelude::IndexedRandom;
+
+// this could be a lot more elegant and nice to work with, but.. im a lazy ass.
+
+pub async fn is_admin(author: i64, admins: i64) -> bool {
+    author == admins
+}
 
 pub async fn make_numbers_pretty(num: u64) -> String {
     let s = num.to_string();

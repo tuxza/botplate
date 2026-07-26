@@ -1,15 +1,21 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// /src/etc/general.rs
+
 use poise::serenity_prelude::{self as serenity};
 
 use crate::etc::helpers;
 use crate::global;
 
+use crate::errors::Error;
+
 // tux reminder: this sucks make it better
 
 /// ping the bot to check latency
 #[poise::command(prefix_command, slash_command)]
-pub async fn ping(
-    ctx: poise::Context<'_, crate::Data, serenity::Error>,
-) -> Result<(), serenity::Error> {
+pub async fn ping(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let start = std::time::Instant::now();
 
     let msg = ctx.say("Pinging...!").await?;
@@ -41,9 +47,7 @@ pub async fn ping(
 
 /// get information about botplate!
 #[poise::command(slash_command)]
-pub async fn info(
-    ctx: poise::Context<'_, crate::Data, serenity::Error>,
-) -> Result<(), serenity::Error> {
+pub async fn info(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let sys = helpers::get_sysinfo().await;
     let bot_uptime = ctx.data().start_time.elapsed().as_secs();
 
