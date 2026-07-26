@@ -15,12 +15,12 @@ pub struct Data {
 }
 
 mod admin;
-mod channels;
 mod entities;
 mod errors;
 mod etc;
 mod events;
 mod global;
+mod shops;
 mod users;
 
 #[tokio::main]
@@ -49,7 +49,7 @@ async fn main() {
                 users::user::balance(),
                 users::user::daily(),
                 users::user::gamble(),
-                channels::shops::shop(),
+                shops::create::shop(),
                 admin::commands::rule(),
                 admin::commands::resend_rules(),
             ],

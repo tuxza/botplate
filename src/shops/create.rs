@@ -4,8 +4,8 @@
 
 // src/channels/shops.rs
 
-use crate::channels::helpers;
 use crate::errors::Error;
+use crate::shops::helpers;
 use poise::serenity_prelude::{self as serenity, Mentionable};
 
 /// manage your shops
@@ -46,6 +46,7 @@ pub async fn create(
     Ok(())
 }
 
+/// delete your shop
 #[poise::command(slash_command, prefix_command)]
 pub async fn delete(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let user_id = ctx.author().id;
