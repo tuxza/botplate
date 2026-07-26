@@ -49,7 +49,7 @@ async fn main() {
                 users::user::balance(),
                 users::user::daily(),
                 users::user::gamble(),
-                channels::shops::create(),
+                channels::shops::shop(),
                 admin::admin::rule(),
                 admin::admin::resend_rules(),
             ],

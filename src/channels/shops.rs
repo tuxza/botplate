@@ -9,7 +9,7 @@ use crate::errors::Error;
 use poise::serenity_prelude::{self as serenity, Mentionable};
 
 /// manage your shops
-#[poise::command(slash_command, prefix_command, subcommands("shop"))]
+#[poise::command(slash_command, prefix_command, subcommands("create", "delete"))]
 pub async fn shop(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     Ok(())
 }
@@ -23,7 +23,7 @@ pub async fn create(
     let guild_id = ctx.guild().unwrap().id;
     let user_id = ctx.author().id;
 
-    let channel_id = helpers::create_new_shop(
+    let channel_id = helpers::create_shop(
         ctx.http(),
         guild_id,
         user_id,
@@ -43,5 +43,12 @@ pub async fn create(
         )
         .await?;
 
+    Ok(())
+}
+
+#[poise::command(slash_command, prefix_command)]
+pub async fn delete(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+    let user_id = ctx.author().id;
+    helpers::delete_shop(ctx.http(), user_id, &ctx.data().database).await?;
     Ok(())
 }

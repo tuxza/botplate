@@ -33,6 +33,25 @@ pub async fn db_create_channel(
     Ok(())
 }
 
+pub async fn db_get_shop_channel_id(
+    user_id: UserId,
+    database: &DatabaseConnection,
+) -> Result<Option<ChannelId>, DbErr> {
+    let channel = Channels::find()
+        .filter(ChannelsColumn::Uid.eq(user_id.get() as i64))
+        .one(database)
+        .await?;
+    Ok(channel.map(|c| ChannelId::new(c.cid as u64)))
+}
+
+pub async fn db_delete_shop(user_id: UserId, database: &DatabaseConnection) -> Result<(), DbErr> {
+    Channels::delete_many()
+        .filter(ChannelsColumn::Uid.eq(user_id.get() as i64))
+        .exec(database)
+        .await?;
+    Ok(())
+}
+
 pub async fn db_user_has_shop(
     user_id: UserId,
     database: &DatabaseConnection,

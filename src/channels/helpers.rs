@@ -18,7 +18,7 @@ use std::collections::HashMap;
 use crate::channels::db::*;
 use crate::errors::Error;
 
-pub async fn create_new_shop(
+pub async fn create_shop(
     http: &Http,
     guild_id: GuildId,
     user_id: UserId,
@@ -44,6 +44,24 @@ pub async fn create_new_shop(
     let new_channel = guild_id.create_channel(http, create_channel).await?;
     db_create_channel(new_channel.id, user_id, database).await?;
     Ok(new_channel.id)
+}
+
+pub async fn delete_shop(
+    http: &Http,
+    user_id: UserId,
+    database: &DatabaseConnection,
+) -> Result<(), Error> {
+    let audit_log_reason = "Deleted by user.";
+
+    let Some(channel_id) = db_get_shop_channel_id(user_id, database).await? else {
+        return Err(Error::Custom("you don't own a shop!".into()));
+    };
+
+    db_delete_shop(user_id, database).await?;
+    http.delete_channel(channel_id, Some(audit_log_reason))
+        .await?;
+
+    Ok(())
 }
 
 pub async fn check_category(
