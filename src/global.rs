@@ -7,6 +7,12 @@
 use poise::serenity_prelude::CreateEmbedFooter;
 use rand::prelude::IndexedRandom;
 
+// this could be a lot more elegant and nice to work with, but.. im a lazy ass.
+
+pub async fn is_admin(author: i64, admins: i64) -> bool {
+    author == admins
+}
+
 pub async fn make_numbers_pretty(num: u64) -> String {
     let s = num.to_string();
     let mut result = String::new();

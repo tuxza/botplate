@@ -11,6 +11,7 @@ use std::time::Instant;
 pub struct Data {
     pub start_time: Instant,
     pub database: DatabaseConnection,
+    pub admins: i64,
 }
 
 mod admin;
@@ -34,6 +35,12 @@ async fn main() {
         .await
         .expect("failed to connect to database! screw you!");
 
+    let admins = std::env::var("ADMIN")
+        // look at this lazy bum copying the same error message!
+        .expect("hey do you have ADMIN in your env file?! you prolly should!");
+
+    let admins: i64 = admins.parse().unwrap();
+
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: vec![
@@ -44,6 +51,7 @@ async fn main() {
                 users::user::gamble(),
                 channels::shops::create(),
                 admin::admin::rule(),
+                admin::admin::resend_rules(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("b.".into()),
@@ -62,6 +70,7 @@ async fn main() {
                 Ok(Data {
                     start_time: start,
                     database: db,
+                    admins: admins,
                 })
             })
         })
