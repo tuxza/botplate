@@ -50,8 +50,8 @@ async fn main() {
                 users::user::daily(),
                 users::user::gamble(),
                 channels::shops::shop(),
-                admin::admin::rule(),
-                admin::admin::resend_rules(),
+                admin::commands::rule(),
+                admin::commands::resend_rules(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("b.".into()),
@@ -70,7 +70,7 @@ async fn main() {
                 Ok(Data {
                     start_time: start,
                     database: db,
-                    admins: admins,
+                    admins,
                 })
             })
         })

@@ -130,7 +130,6 @@ pub async fn get_balance(user_id: i64, database: &DatabaseConnection) -> i64 {
 /// // Deduct 150 tokens
 /// edit_balance(123456789, -150, &db).await;
 /// ```
-
 pub async fn edit_balance(
     user_id: i64,
     amount: i64,
@@ -153,12 +152,12 @@ pub async fn edit_balance(
     Ok(())
 }
 
+// this is DEFINITELY not an elegant way to do such a thing
+// + this func might be added to global.. maybe
+
 /// Initializes a new user with the given ID and balance, inserting it into the database.
 ///
-/// This function is called when a user does not exist in the database, and creates a new record with the given ID and balance. (which may have to be tweaked later.)
-
-// this is DEFINITELY not an elegant way to do such a thing
-// + this func might be added to global.. maybe.
+/// This function is called when a user does not exist in the database, and creates a new record with the given ID and balance. (which may have to be tweaked later.).
 pub async fn init_new_user(
     user_id: i64,
     amount: i64,

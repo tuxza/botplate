@@ -18,7 +18,6 @@ pub async fn db_create_channel(
         cid: Set(new_channel_id.get() as i64),
         uid: Set(user_id.get() as i64),
         in_stock_market: Set(false),
-        ..Default::default()
     };
 
     Channels::insert(active_model)
