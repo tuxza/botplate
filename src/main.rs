@@ -13,6 +13,7 @@ pub struct Data {
     pub database: DatabaseConnection,
 }
 
+mod admin;
 mod channels;
 mod entities;
 mod errors;
@@ -42,9 +43,10 @@ async fn main() {
                 users::user::daily(),
                 users::user::gamble(),
                 channels::shops::create(),
+                admin::admin::rule(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
-                prefix: Some("$".into()),
+                prefix: Some("b.".into()),
                 ..Default::default()
             },
             event_handler: |_ctx, event, framework, data| {
@@ -68,7 +70,8 @@ async fn main() {
     let token = std::env::var("DISCORD_TOKEN").expect("HEY DUMBASS WHERES THE TOKEN");
     let intents = serenity::GatewayIntents::GUILDS
         | serenity::GatewayIntents::GUILD_MESSAGES
-        | serenity::GatewayIntents::GUILD_MEMBERS;
+        | serenity::GatewayIntents::GUILD_MEMBERS
+        | serenity::GatewayIntents::MESSAGE_CONTENT;
 
     let mut client = serenity::ClientBuilder::new(token, intents)
         .framework(framework)
