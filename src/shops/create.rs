@@ -11,6 +11,7 @@ use poise::serenity_prelude::{self as serenity, Mentionable};
 /// manage your shops
 #[poise::command(slash_command, prefix_command, subcommands("create", "delete"))]
 pub async fn shop(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+    _ctx.say("bro go AWAY").await?;
     Ok(())
 }
 
@@ -51,5 +52,6 @@ pub async fn create(
 pub async fn delete(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let user_id = ctx.author().id;
     helpers::delete_shop(ctx.http(), user_id, &ctx.data().database).await?;
+    ctx.say("shop deleted").await?;
     Ok(())
 }

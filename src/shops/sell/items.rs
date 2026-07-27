@@ -1,6 +1,5 @@
-use crate::shops::sell::helpers::sell_item;
-
 use crate::errors::Error;
+use crate::shops::sell::db;
 
 #[poise::command(slash_command, prefix_command, subcommands("sell", "delete"))]
 pub async fn items(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
@@ -9,20 +8,42 @@ pub async fn items(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), E
 
 #[poise::command(slash_command, prefix_command)]
 pub async fn sell(
-    _ctx: poise::Context<'_, crate::Data, Error>,
-    #[description = "name of item to sell"] name: String,
-    #[description = "description of item to sell"] description: String,
-    #[description = "price per unit"] price: i64,
-    #[description = "quantity to sell"] quantity: i64,
+    ctx: poise::Context<'_, crate::Data, Error>,
+    #[description = "item name"] name: String,
+    #[description = "price in tuxbux"] price: i64,
+    #[description = "how many to list"] quantity: i64,
+    #[description = "description"] description: Option<String>,
 ) -> Result<(), Error> {
-    let cid = i64::from(_ctx.channel_id());
-    let item_type = "default".to_string();
-    let database = &_ctx.data().database;
+    let uid = ctx.author().id.get() as i64;
+    let cid = ctx.channel_id().get() as i64;
 
-    sell_item(cid, name, description, item_type, price, quantity, database).await?;
+    if !db::verify_shop(uid, cid, &ctx.data().database).await? {
+        ctx.say("this isn't your shop!").await?;
+        return Ok(());
+    }
 
-    _ctx.say("item listed").await?;
+    if price <= 0 || quantity <= 0 {
+        ctx.say("price and quantity gotta be positive.. bum.")
+            .await?;
+        return Ok(());
+    }
 
+    db::add_item(
+        cid,
+        name.clone(),
+        description.unwrap_or_default(),
+        "product".to_string(),
+        price,
+        quantity,
+        &ctx.data().database,
+    )
+    .await?;
+
+    ctx.say(format!(
+        "listed **{}** x{} for {} tuxbux each",
+        name, quantity, price
+    ))
+    .await?;
     Ok(())
 }
 
