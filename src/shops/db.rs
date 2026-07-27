@@ -14,6 +14,8 @@ pub async fn db_create_channel(
     user_id: UserId,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
+    crate::global::ensure_user_exists(user_id.get() as i64, database).await?;
+
     let active_model = ChannelsActiveModel {
         cid: Set(new_channel_id.get() as i64),
         uid: Set(user_id.get() as i64),
@@ -61,4 +63,15 @@ pub async fn db_user_has_shop(
         .await?;
 
     Ok(existing.is_some())
+}
+
+pub async fn db_delete_channel_by_cid(
+    channel_id: ChannelId,
+    database: &DatabaseConnection,
+) -> Result<(), DbErr> {
+    Channels::delete_many()
+        .filter(ChannelsColumn::Cid.eq(channel_id.get() as i64))
+        .exec(database)
+        .await?;
+    Ok(())
 }

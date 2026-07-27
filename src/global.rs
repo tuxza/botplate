@@ -7,6 +7,39 @@
 use poise::serenity_prelude::CreateEmbedFooter;
 use rand::prelude::IndexedRandom;
 
+use crate::entities::prelude::Users;
+use crate::entities::types::{UsersActiveModel, UsersColumn};
+use sea_orm::sea_query::OnConflict;
+use sea_orm::{ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait};
+
+/// Ensures a user row exists in the database, creating one with a
+/// starting balance of 0 if it doesn't. No-op if the user already exists.
+///
+/// This exists because other tables (e.g. `channels`) have FK constraints
+/// pointing at `users.id`, and callers that create those rows can't assume
+/// the referenced user row is already there (e.g. their row was wiped)
+pub async fn ensure_user_exists(user_id: i64, database: &DatabaseConnection) -> Result<(), DbErr> {
+    let active_model = UsersActiveModel {
+        id: Set(user_id),
+        tokens: Set(0),
+        debt: Set(0),
+        last_daily: Set(None),
+        last_job: Set(None),
+        xp: Set(0),
+        level: Set(0),
+        spouse: Set(None),
+        spouse_since: Set(None),
+        joint_balance: Set(None),
+    };
+
+    Users::insert(active_model)
+        .on_conflict(OnConflict::column(UsersColumn::Id).do_nothing().to_owned())
+        .exec_without_returning(database)
+        .await?;
+
+    Ok(())
+}
+
 // this could be a lot more elegant and nice to work with, but.. im a lazy ass.
 
 pub async fn is_admin(author: i64, admins: i64) -> bool {
