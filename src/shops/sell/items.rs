@@ -1,7 +1,7 @@
 use crate::errors::Error;
 use crate::shops::sell::db;
 
-#[poise::command(slash_command, prefix_command, subcommands("sell", "delete"))]
+#[poise::command(slash_command, prefix_command, subcommands("sell", "remove"))]
 pub async fn items(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     Ok(())
 }
@@ -48,6 +48,13 @@ pub async fn sell(
 }
 
 #[poise::command(slash_command, prefix_command)]
-pub async fn delete(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+pub async fn remove(
+    _ctx: poise::Context<'_, crate::Data, Error>,
+    #[description = "item name"] name: String,
+    #[description = "quantity"] quantity: i64,
+) -> Result<(), Error> {
+    let cid = _ctx.channel_id().get() as i64;
+    db::remove_item(cid, name.clone(), quantity, &_ctx.data().database).await?; // cloned because rust was complaining
+    _ctx.say(format!("removed {} x{}", name, quantity)).await?;
     Ok(())
 }
