@@ -50,6 +50,7 @@ async fn main() {
                 users::user::daily(),
                 users::user::gamble(),
                 shops::create::shop(),
+                shops::sell::items::items(),
                 admin::commands::rule(),
                 admin::commands::resend_rules(),
             ],
