@@ -55,3 +55,11 @@ pub async fn delete(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), E
     ctx.say("shop deleted").await?;
     Ok(())
 }
+
+use crate::shops::sell::items::remove;
+use crate::shops::sell::items::sell;
+
+#[poise::command(slash_command, prefix_command, subcommands("sell", "remove"))]
+pub async fn items(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+    Ok(())
+}

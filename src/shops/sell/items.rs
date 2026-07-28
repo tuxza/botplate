@@ -1,11 +1,6 @@
 use crate::errors::Error;
 use crate::shops::sell::db;
 
-#[poise::command(slash_command, prefix_command, subcommands("sell", "remove"))]
-pub async fn items(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
-    Ok(())
-}
-
 #[poise::command(slash_command, prefix_command)]
 pub async fn sell(
     ctx: poise::Context<'_, crate::Data, Error>,

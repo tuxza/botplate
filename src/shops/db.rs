@@ -4,7 +4,8 @@
 
 // src/channels/db.rs
 use crate::entities::prelude::Channels;
-use crate::entities::types::{ChannelsActiveModel, ChannelsColumn};
+use crate::entities::prelude::Items;
+use crate::entities::types::{ChannelsActiveModel, ChannelsColumn, ItemsActiveModel, ItemsColumn};
 use poise::serenity_prelude::{ChannelId, UserId};
 use sea_orm::sea_query::OnConflict;
 use sea_orm::{ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
@@ -74,4 +75,17 @@ pub async fn db_delete_channel_by_cid(
         .exec(database)
         .await?;
     Ok(())
+}
+
+use crate::entities::items::Model;
+
+pub async fn db_list_items(
+    channel_id: ChannelId,
+    database: &DatabaseConnection,
+) -> Result<Vec<Model>, DbErr> {
+    let items = Items::find()
+        .filter(ItemsColumn::OriginCid.eq(channel_id.get() as i64))
+        .all(database)
+        .await?;
+    Ok(items)
 }
