@@ -61,8 +61,7 @@ pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Er
 
 The reason for this is to keep botplate flexible. (We plan to have an API so extensions can be written in other languages.)
 
-If you find yourself writing SeaORM logic directly inside a
-command function, stop and move it into `helpers.rs` (or `db.rs` if the logic in helpers is not very clean.).
+If you find yourself writing SeaORM logic directly inside a command function, stop and move it into `helpers.rs`. (or `db.rs` if the logic in helpers is not very clean.)
 
 ### Adding or changing database schema
 
@@ -75,8 +74,7 @@ migration run order matters here (e.g. `central_bank` → `users` → `channels`
 sea-orm-cli migrate up --database-url sqlite://example.db
 ```
 
-After writing the migration, regenerate entities as below. Please note in your
-PR description any design reasoning behind schema choices so reviewers aren't left guessing what the new schema does.
+After writing the migration, regenerate entities as below. Please note in your PR description any design reasoning behind schema choices so reviewers aren't left guessing what the new schema does.
 
 ### Entities are generated, not hand written.
 
