@@ -4,8 +4,7 @@
 
 // src/channels/db.rs
 use crate::entities::prelude::Channels;
-use crate::entities::prelude::Items;
-use crate::entities::types::{ChannelsActiveModel, ChannelsColumn, ItemsActiveModel, ItemsColumn};
+use crate::entities::types::{ChannelsActiveModel, ChannelsColumn};
 use poise::serenity_prelude::{ChannelId, UserId};
 use sea_orm::sea_query::OnConflict;
 use sea_orm::{ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
@@ -77,15 +76,18 @@ pub async fn db_delete_channel_by_cid(
     Ok(())
 }
 
-use crate::entities::items::Model;
-
-pub async fn db_list_items(
-    channel_id: ChannelId,
+pub async fn db_verify_shop(
+    uid: i64,
+    cid: i64,
     database: &DatabaseConnection,
-) -> Result<Vec<Model>, DbErr> {
-    let items = Items::find()
-        .filter(ItemsColumn::OriginCid.eq(channel_id.get() as i64))
-        .all(database)
+) -> Result<bool, DbErr> {
+    let channel = Channels::find()
+        .filter(ChannelsColumn::Cid.eq(cid))
+        .one(database)
         .await?;
-    Ok(items)
+
+    Ok(match channel {
+        Some(c) => c.uid == uid,
+        None => false,
+    })
 }

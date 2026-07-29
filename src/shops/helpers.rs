@@ -64,6 +64,9 @@ pub async fn delete_shop(
     Ok(())
 }
 
+// i thought to myself to maybe call this on startup, and THEN have a global struct that holds a bool or something,
+// but.. this is literally an API call and.. i dont really think it matters too much. someone can OBVIOUSLY
+// correct me on that but.. whatevs!
 pub async fn check_category(
     http: &Http,
     guild_id: GuildId,

@@ -1,4 +1,12 @@
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// /src/shops/sell/items.rs
+
 use crate::errors::Error;
+use crate::shops::buy::db::db_remove_item;
+use crate::shops::db::db_verify_shop; // tuxnote, put this in global *maybe*
 use crate::shops::sell::db;
 
 #[poise::command(slash_command, prefix_command)]
@@ -12,7 +20,7 @@ pub async fn sell(
     let uid = ctx.author().id.get() as i64;
     let cid = ctx.channel_id().get() as i64;
 
-    if !db::verify_shop(uid, cid, &ctx.data().database).await? {
+    if !db_verify_shop(uid, cid, &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;
         return Ok(());
     }
@@ -44,12 +52,12 @@ pub async fn sell(
 
 #[poise::command(slash_command, prefix_command)]
 pub async fn remove(
-    _ctx: poise::Context<'_, crate::Data, Error>,
+    ctx: poise::Context<'_, crate::Data, Error>,
     #[description = "item name"] name: String,
     #[description = "quantity"] quantity: i64,
 ) -> Result<(), Error> {
-    let cid = _ctx.channel_id().get() as i64;
-    db::remove_item(cid, name.clone(), quantity, &_ctx.data().database).await?; // cloned because rust was complaining
-    _ctx.say(format!("removed {} x{}", name, quantity)).await?;
+    let cid = ctx.channel_id().get() as i64;
+    db_remove_item(cid, name.as_str(), quantity, &ctx.data().database).await?;
+    ctx.say(format!("removed {} x{}", name, quantity)).await?;
     Ok(())
 }

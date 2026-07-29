@@ -1,5 +1,9 @@
-use crate::entities::prelude::Channels;
-use crate::entities::types::ChannelsColumn;
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// /src/shops/sell/db.rs
+
 use sea_orm::{ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 
 use crate::entities::prelude::Items;
@@ -44,41 +48,4 @@ pub async fn add_item(
     }
 
     Ok(())
-}
-
-pub async fn remove_item(
-    cid: i64,
-    name: String,
-    quantity: i64,
-    database: &DatabaseConnection,
-) -> Result<bool, DbErr> {
-    let existing = Items::find()
-        .filter(ItemsColumn::Name.eq(name))
-        .filter(ItemsColumn::OriginCid.eq(cid))
-        .one(database)
-        .await?;
-
-    let Some(model) = existing else {
-        return Ok(false);
-    };
-
-    let remaining = (model.quantity - quantity).max(0);
-
-    let mut active_model: ItemsActiveModel = model.into();
-    active_model.quantity = Set(remaining);
-    Items::update(active_model).exec(database).await?;
-
-    Ok(true)
-}
-
-pub async fn verify_shop(uid: i64, cid: i64, database: &DatabaseConnection) -> Result<bool, DbErr> {
-    let channel = Channels::find()
-        .filter(ChannelsColumn::Cid.eq(cid))
-        .one(database)
-        .await?;
-
-    Ok(match channel {
-        Some(c) => c.uid == uid,
-        None => false,
-    })
 }

@@ -15,6 +15,14 @@ pub async fn shop(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Er
     Ok(())
 }
 
+use crate::shops::sell::items::remove;
+use crate::shops::sell::items::sell;
+
+#[poise::command(slash_command, prefix_command, subcommands("sell", "remove"))]
+pub async fn items(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+    Ok(())
+}
+
 /// create a new shop
 #[poise::command(slash_command, prefix_command)]
 pub async fn create(
@@ -53,13 +61,5 @@ pub async fn delete(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), E
     let user_id = ctx.author().id;
     helpers::delete_shop(ctx.http(), user_id, &ctx.data().database).await?;
     ctx.say("shop deleted").await?;
-    Ok(())
-}
-
-use crate::shops::sell::items::remove;
-use crate::shops::sell::items::sell;
-
-#[poise::command(slash_command, prefix_command, subcommands("sell", "remove"))]
-pub async fn items(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     Ok(())
 }

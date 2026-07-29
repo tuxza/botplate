@@ -1,5 +1,5 @@
 use crate::errors::Error;
-use crate::shops::db::db_list_items;
+use crate::shops::buy::db::db_list_items;
 use poise::serenity_prelude::CreateEmbed;
 
 #[poise::command(prefix_command, slash_command)]
@@ -17,10 +17,7 @@ pub async fn list(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
 
         embed = embed.field(
             &item.name,
-            format!(
-                "{}\n**Price:** T${} **Quantity:** x{}",
-                item.description, price, item.quantity
-            ),
+            format!("{}\n**T$:** {} x{}", item.description, price, item.quantity),
             false,
         );
     }
