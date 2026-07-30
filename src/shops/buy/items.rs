@@ -41,7 +41,7 @@ pub async fn buy(
     // maybe ill make this standard across the codebase...
     // if i do this more than once LOL
     let perchance =
-        db_remove_item(cid.into(), &found_item.name, quantity, &ctx.data().database).await?;
+        db_remove_item(cid, &found_item.name, quantity, &ctx.data().database).await?;
 
     if !perchance {
         ctx.say(format!("Not enough stock of `{}`.", found_item.name))

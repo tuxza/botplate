@@ -12,7 +12,7 @@ pub async fn db_add_inv_item(
     acquired_price: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    let existing = Inventory::find_by_id((uid.into(), item_id.into()))
+    let existing = Inventory::find_by_id((uid, item_id.into()))
         .one(database)
         .await?;
 

@@ -13,7 +13,7 @@ pub async fn list(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
         .description("here's what this shop is selling:");
 
     for item in items {
-        let price = item.price as i64;
+        let price = item.price;
 
         embed = embed.field(
             &item.name,
