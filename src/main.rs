@@ -49,6 +49,7 @@ async fn main() {
                 users::user::balance(),
                 users::user::daily(),
                 users::user::gamble(),
+                users::inventory::list::inventory(),
                 shops::manage::shop(),
                 shops::manage::items(),
                 shops::buy::items::buy(),

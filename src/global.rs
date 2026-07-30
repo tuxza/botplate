@@ -65,7 +65,6 @@ pub async fn random_footer() -> CreateEmbedFooter {
     let version = "v0.1.5"; // it would be a lot smarter to make this a constant but i only call it once so shut up
     let messages = [
         "botplate-rs is cool",
-        "come in here dear boy have a cigar your gonna go far",
         "check out our github repo!",
         "how random is random..?",
         "tuxzilla is in your walls",
@@ -76,6 +75,7 @@ pub async fn random_footer() -> CreateEmbedFooter {
         "billions of tuxaroos",
         "billions must love",
         "wait what is this server again",
+        "tuxzilla vs making a good bot",
     ];
     let Some(message) = messages.choose(&mut rng) else {
         return CreateEmbedFooter::new(format!("botplate-rs reimagined | {}", version));
