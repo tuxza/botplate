@@ -7,15 +7,34 @@
 use poise::serenity_prelude as serenity;
 
 use crate::errors::Error;
+use crate::events::on_message::on_message;
 
 pub async fn event_handler(
+    ctx: &serenity::Context,
     event: &serenity::FullEvent,
     _framework: poise::FrameworkContext<'_, crate::Data, Error>,
     _data: &crate::Data,
 ) -> Result<(), Error> {
-    if let serenity::FullEvent::GuildMemberAddition { new_member } = event {
-        on_guild_join(&_data.database, new_member).await?;
+    match event {
+        serenity::FullEvent::GuildMemberAddition { new_member } => {
+            on_guild_join(&_data.database, new_member).await?;
+        }
+        serenity::FullEvent::ChannelDelete { channel, .. } => {
+            on_channel_delete(&_data.database, channel.id).await?;
+        }
+        serenity::FullEvent::Message { new_message } => {
+            on_message(new_message, ctx, &_data.xp_map, &_data.database, 100).await?;
+        }
+        _ => {}
     }
+    Ok(())
+}
+
+pub async fn on_channel_delete(
+    db: &DatabaseConnection,
+    channel_id: serenity::ChannelId,
+) -> Result<(), Error> {
+    crate::shops::db::db_delete_channel_by_cid(channel_id, db).await?;
     Ok(())
 }
 

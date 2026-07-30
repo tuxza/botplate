@@ -158,6 +158,7 @@ pub async fn edit_balance(
 /// Initializes a new user with the given ID and balance, inserting it into the database.
 ///
 /// This function is called when a user does not exist in the database, and creates a new record with the given ID and balance. (which may have to be tweaked later.).
+/// Could be replaced by [`ensure_user_exists`]. but ill work that out later.
 pub async fn init_new_user(
     user_id: i64,
     amount: i64,

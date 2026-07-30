@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-// src/channels/helpers.rs
+// src/shops/helpers.rs
 
 use poise::serenity_prelude as serenity;
 use sea_orm::DatabaseConnection;
@@ -15,8 +15,8 @@ use serenity::model::id::{ChannelId, GuildId, UserId};
 use serenity::model::permissions::Permissions;
 use std::collections::HashMap;
 
-use crate::channels::db::*;
 use crate::errors::Error;
+use crate::shops::db::*;
 
 pub async fn create_shop(
     http: &Http,
@@ -64,6 +64,9 @@ pub async fn delete_shop(
     Ok(())
 }
 
+// i thought to myself to maybe call this on startup, and THEN have a global struct that holds a bool or something,
+// but.. this is literally an API call and.. i dont really think it matters too much. someone can OBVIOUSLY
+// correct me on that but.. whatevs!
 pub async fn check_category(
     http: &Http,
     guild_id: GuildId,

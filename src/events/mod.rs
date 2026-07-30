@@ -4,3 +4,4 @@
 
 pub mod central_bank;
 pub mod event_handler;
+pub mod on_message;

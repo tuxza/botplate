@@ -4,13 +4,22 @@
 
 // src/channels/shops.rs
 
-use crate::channels::helpers;
 use crate::errors::Error;
+use crate::shops::helpers;
 use poise::serenity_prelude::{self as serenity, Mentionable};
 
 /// manage your shops
 #[poise::command(slash_command, prefix_command, subcommands("create", "delete"))]
 pub async fn shop(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+    _ctx.say("bro go AWAY").await?;
+    Ok(())
+}
+
+use crate::shops::sell::items::remove;
+use crate::shops::sell::items::sell;
+
+#[poise::command(slash_command, prefix_command, subcommands("sell", "remove"))]
+pub async fn items(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     Ok(())
 }
 
@@ -46,9 +55,11 @@ pub async fn create(
     Ok(())
 }
 
+/// delete your shop
 #[poise::command(slash_command, prefix_command)]
 pub async fn delete(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let user_id = ctx.author().id;
     helpers::delete_shop(ctx.http(), user_id, &ctx.data().database).await?;
+    ctx.say("shop deleted").await?;
     Ok(())
 }

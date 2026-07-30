@@ -4,8 +4,11 @@
 
 // src/channels/mod.rs
 
-mod db;
+pub mod buy;
+pub mod db;
 mod helpers;
-pub mod shops;
+pub mod list;
+pub mod manage;
+pub mod sell;
 
 // why the hell did this guy add a copyright to a damn mod file what an arrogant bastard!
