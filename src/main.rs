@@ -8,10 +8,13 @@ use poise::serenity_prelude as serenity;
 use sea_orm::{Database, DatabaseConnection};
 use std::time::Instant;
 
+use dashmap::DashMap;
+
 pub struct Data {
     pub start_time: Instant,
     pub database: DatabaseConnection,
     pub admins: i64,
+    pub xp_map: DashMap<i64, (i64, i64)>, // uid -> (xp, level)
 }
 
 mod admin;
@@ -61,8 +64,10 @@ async fn main() {
                 prefix: Some("b.".into()),
                 ..Default::default()
             },
-            event_handler: |_ctx, event, framework, data| {
-                Box::pin(events::event_handler::event_handler(event, framework, data))
+            event_handler: |ctx, event, framework, data| {
+                Box::pin(events::event_handler::event_handler(
+                    ctx, event, framework, data,
+                ))
             },
             ..Default::default()
         })
@@ -75,6 +80,7 @@ async fn main() {
                     start_time: start,
                     database: db,
                     admins,
+                    xp_map: DashMap::new(),
                 })
             })
         })

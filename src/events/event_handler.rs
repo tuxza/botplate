@@ -7,8 +7,10 @@
 use poise::serenity_prelude as serenity;
 
 use crate::errors::Error;
+use crate::events::on_message::on_message;
 
 pub async fn event_handler(
+    ctx: &serenity::Context,
     event: &serenity::FullEvent,
     _framework: poise::FrameworkContext<'_, crate::Data, Error>,
     _data: &crate::Data,
@@ -19,6 +21,9 @@ pub async fn event_handler(
         }
         serenity::FullEvent::ChannelDelete { channel, .. } => {
             on_channel_delete(&_data.database, channel.id).await?;
+        }
+        serenity::FullEvent::Message { new_message } => {
+            on_message(new_message, ctx, &_data.xp_map, &_data.database, 100).await?;
         }
         _ => {}
     }
