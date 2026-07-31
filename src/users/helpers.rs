@@ -5,7 +5,9 @@
 // src/users/helpers.rs
 
 use crate::entities::prelude::Users;
+use crate::entities::types::UsersActiveModel;
 use crate::entities::types::*;
+use dashmap::DashMap;
 use sea_orm::{
     ActiveModelTrait, ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait,
     sea_query::OnConflict,
@@ -150,6 +152,31 @@ pub async fn edit_balance(
     }
 
     Ok(())
+}
+
+/// Returns the user's XP and level.
+///
+/// Checks the in-memory XP cache first; falls back to the database on a
+/// cache miss (e.g. bot just restarted, or the user hasn't sent a message
+/// since the cache was last populated) and populates the cache from that
+/// result so future lookups skip the DB.
+///
+/// Returns `(0, 0)` if the user does not exist in either the cache or DB.
+pub async fn get_user_xp_and_level(
+    user_id: i64,
+    xp_map: &DashMap<i64, (i64, i64)>,
+    database: &DatabaseConnection,
+) -> Result<(i64, i64), DbErr> {
+    if let Some(entry) = xp_map.get(&user_id) {
+        return Ok(*entry);
+    }
+
+    let user = Users::find_by_id(user_id).one(database).await?;
+    let rank = user.map(|u| (u.xp, u.level)).unwrap_or((0, 0));
+
+    xp_map.insert(user_id, rank);
+
+    Ok(rank)
 }
 
 // this is DEFINITELY not an elegant way to do such a thing
