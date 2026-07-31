@@ -27,7 +27,7 @@ pub async fn on_message(
 
     // if the user is not in the map, fetch their xp/level from the database. so yk..
     // we dont have to ask the DB everytime someone sends a message.
-    // i (hope) this is faster than querying the database EVERYtime. (i hope.)
+    // i (hope) this is faster than querying the database. (i hope.)
     if !xp_map.contains_key(&uid) {
         let (xp, level) = Users::find_by_id(uid)
             .one(database)

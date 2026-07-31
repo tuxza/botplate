@@ -5,6 +5,7 @@
 // src/users/helpers.rs
 
 use crate::entities::prelude::Users;
+use crate::entities::types::UsersActiveModel;
 use crate::entities::types::*;
 use sea_orm::{
     ActiveModelTrait, ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait,
@@ -150,6 +151,21 @@ pub async fn edit_balance(
     }
 
     Ok(())
+}
+
+/// Returns the user's XP and level.
+///
+/// Pass the user's ID and the database connection to this function.
+///
+/// Returns `(0, 0)` if the user does not exist.
+pub async fn get_user_xp_and_level(
+    user_id: i64,
+    database: &DatabaseConnection,
+) -> Result<(i64, i64), DbErr> {
+    let user = Users::find_by_id(user_id).one(database).await?;
+
+    let rank = user.map(|u| (u.xp, u.level)).unwrap_or((0, 0));
+    Ok(rank)
 }
 
 // this is DEFINITELY not an elegant way to do such a thing

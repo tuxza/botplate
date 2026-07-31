@@ -14,7 +14,7 @@ pub struct Data {
     pub start_time: Instant,
     pub database: DatabaseConnection,
     pub admins: i64,
-    pub xp_map: DashMap<i64, (i64, i64)>, // uid -> (xp, level)
+    pub xp_map: DashMap<i64, (i64, i64)>,
 }
 
 mod admin;
@@ -50,6 +50,7 @@ async fn main() {
                 etc::general::ping(),
                 etc::general::info(),
                 users::user::balance(),
+                users::user::rank(),
                 users::user::daily(),
                 users::user::gamble(),
                 users::inventory::list::inventory(),
@@ -74,7 +75,7 @@ async fn main() {
         .setup(move |ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                let target_channel = serenity::ChannelId::new(1471369516612194314);
+                let target_channel = serenity::ChannelId::new(1401390175770382366);
                 events::central_bank::send_bank_embed(&ctx.http, target_channel, &db).await?;
                 Ok(Data {
                     start_time: start,

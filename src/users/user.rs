@@ -40,6 +40,18 @@ pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Er
     Ok(())
 }
 
+#[poise::command(prefix_command, slash_command)]
+pub async fn rank(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+    let author = ctx.author();
+    let (xp, level) =
+        helpers::get_user_xp_and_level(author.id.get() as i64, &ctx.data().database).await?;
+
+    ctx.say(format!("You are level {} with {} XP.", level, xp))
+        .await?;
+
+    Ok(())
+}
+
 // now i THOUGHT of putting the work that gamble does into a function
 // but.. i kind thought it wouldnt be used again..
 // obviously get_balance is used frequently LOL
