@@ -43,8 +43,12 @@ pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Er
 #[poise::command(prefix_command, slash_command)]
 pub async fn rank(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let author = ctx.author();
-    let (xp, level) =
-        helpers::get_user_xp_and_level(author.id.get() as i64, &ctx.data().database).await?;
+    let (xp, level) = helpers::get_user_xp_and_level(
+        author.id.get() as i64,
+        &ctx.data().xp_map,
+        &ctx.data().database,
+    )
+    .await?;
 
     ctx.say(format!("You are level {} with {} XP.", level, xp))
         .await?;
