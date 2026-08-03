@@ -5,6 +5,7 @@
 // /src/shops/buy/items.rs
 
 use crate::shops::buy::db::db_remove_item;
+use crate::shops::db::db_get_shop_owner_id;
 use crate::shops::db::db_verify_shop;
 use crate::users::inventory::db::db_add_inv_item;
 
@@ -40,6 +41,23 @@ pub async fn buy(
     let database = &ctx.data().database;
 
     crate::users::helpers::edit_balance(user_id, amount, database).await?;
+
+    // shadow user_id and amount for the shop owner now!!
+
+    let owner_id = db_get_shop_owner_id(cid, &ctx.data().database).await?;
+
+    let Some(owner) = owner_id else {
+        return Err(Error::Custom(
+            "Internal error. Could not find shop owner.".to_string(),
+        ));
+    }; // this check might not be neccessary, but nonetheless
+    let user_id = owner.get();
+    let amount = acquired_price;
+
+    // just learned serenity returns user ids as u64, not i64..
+    // fix in botplate 2.0
+
+    crate::users::helpers::edit_balance(user_id as i64, amount, database).await?;
 
     db_add_inv_item(uid, item_id, quantity, acquired_price, &ctx.data().database).await?;
 

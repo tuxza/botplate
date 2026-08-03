@@ -45,6 +45,19 @@ pub async fn db_get_shop_channel_id(
     Ok(channel.map(|c| ChannelId::new(c.cid as u64)))
 }
 
+pub async fn db_get_shop_owner_id(
+    cid: i64,
+    database: &DatabaseConnection,
+) -> Result<Option<UserId>, DbErr> {
+    let channel = Channels::find()
+        .filter(ChannelsColumn::Cid.eq(cid))
+        .one(database)
+        .await?;
+
+    // Convert your database field directly to u64 for Serenity
+    Ok(channel.map(|c| UserId::new(c.uid as u64)))
+}
+
 pub async fn db_delete_shop(user_id: UserId, database: &DatabaseConnection) -> Result<(), DbErr> {
     Channels::delete_many()
         .filter(ChannelsColumn::Uid.eq(user_id.get() as i64))
