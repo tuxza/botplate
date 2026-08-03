@@ -62,7 +62,7 @@ pub async fn make_numbers_pretty(num: u64) -> String {
 
 pub async fn random_footer() -> CreateEmbedFooter {
     let mut rng = rand::rng();
-    let version = "v0.1.5"; // it would be a lot smarter to make this a constant but i only call it once so shut up
+    let version = env!("CARGO_PKG_VERSION");
     let messages = [
         "botplate-rs is cool",
         "check out our github repo!",
@@ -76,6 +76,7 @@ pub async fn random_footer() -> CreateEmbedFooter {
         "billions must love",
         "wait what is this server again",
         "tuxzilla vs making a good bot",
+        "mold -run cargo build --release",
     ];
     let Some(message) = messages.choose(&mut rng) else {
         return CreateEmbedFooter::new(format!("botplate-rs reimagined | {}", version));

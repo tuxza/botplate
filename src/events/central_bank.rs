@@ -91,7 +91,7 @@ pub async fn send_bank_embed(
             true,
         )
         .footer(
-            poise::serenity_prelude::CreateEmbedFooter::new("botplate-rs | botplate reimagined | v0.1.0")
+            poise::serenity_prelude::CreateEmbedFooter::new(format!("botplate-rs | botplate reimagined | {}", env!("CARGO_PKG_VERSION"))),
         );
     channel_id
         .send_message(http, CreateMessage::new().embed(embed))
