@@ -32,8 +32,7 @@ pub async fn on_message(
         let (xp, level) = Users::find_by_id(uid)
             .one(database)
             .await?
-            .map(|u| (u.xp, u.level))
-            .unwrap_or((0, 0));
+            .map_or((0, 0), |u| (u.xp, u.level));
         xp_map.insert(uid, (xp, level));
     }
 
@@ -73,7 +72,7 @@ pub async fn on_message(
             ))
             .field(
                 "tuxbux earned",
-                format!("**{} tuxbux**", tokens_earned),
+                format!("**{tokens_earned} tuxbux**"),
                 true,
             )
             .color(0xFFD700);

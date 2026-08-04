@@ -26,7 +26,7 @@ pub async fn get_sysinfo() -> SysInfo {
 
     let pid = sysinfo::get_current_pid().expect("fuck you, failed to get PID for some reason");
 
-    let bot_memory = sys.process(pid).map(|p| p.memory()).unwrap_or(0);
+    let bot_memory = sys.process(pid).map_or(0, sysinfo::Process::memory);
 
     // h = host if you cant read
 
@@ -53,5 +53,5 @@ pub async fn convert_uptime_2_human(uptime: u64) -> String {
     let minutes = (uptime / 60) % 60;
     let hours = (uptime / 3600) % 24;
     let days = uptime / 86400;
-    format!("{}d {}h {}m {}s", days, hours, minutes, seconds)
+    format!("{days}d {hours}h {minutes}m {seconds}s")
 }

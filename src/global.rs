@@ -79,10 +79,9 @@ pub async fn random_footer() -> CreateEmbedFooter {
         "mold -run cargo build --release",
     ];
     let Some(message) = messages.choose(&mut rng) else {
-        return CreateEmbedFooter::new(format!("botplate-rs reimagined | {}", version));
+        return CreateEmbedFooter::new(format!("botplate-rs reimagined | {version}"));
     };
     CreateEmbedFooter::new(format!(
-        "{} | botplate-rs reimagined | {}",
-        message, version
+        "{message} | botplate-rs reimagined | {version}"
     ))
 }

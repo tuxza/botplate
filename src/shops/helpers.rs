@@ -16,7 +16,7 @@ use serenity::model::permissions::Permissions;
 use std::collections::HashMap;
 
 use crate::errors::Error;
-use crate::shops::db::*;
+use crate::shops::db::{db_user_has_shop, db_create_channel, db_get_shop_channel_id, db_delete_shop};
 
 pub async fn create_shop(
     http: &Http,

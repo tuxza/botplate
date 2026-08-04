@@ -16,14 +16,14 @@ pub async fn inventory(ctx: poise::Context<'_, crate::Data, Error>) -> Result<()
 
     let list = items
         .iter()
-        .map(|(name, qty)| format!("**{}** x{}", name, qty))
+        .map(|(name, qty)| format!("**{name}** x{qty}"))
         .collect::<Vec<_>>()
         .join("\n");
 
     let embed = CreateEmbed::new()
         .color(0x7492B9)
         .title("your inventory")
-        .field("items", format!("\n{}", list), false)
+        .field("items", format!("\n{list}"), false)
         .footer(random_footer().await);
 
     let reply = poise::CreateReply::default().embed(embed);

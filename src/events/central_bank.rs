@@ -18,7 +18,7 @@ async fn get_money_get_bread(database: &DatabaseConnection) -> String {
         .one(database)
         .await
         .unwrap_or_default();
-    let balance = central_bank.map(|bank| bank.balance).unwrap_or(0);
+    let balance = central_bank.map_or(0, |bank| bank.balance);
     make_numbers_pretty(balance as u64).await
 }
 
@@ -73,7 +73,7 @@ pub async fn send_bank_embed(
     let central_bank = get_money_get_bread(database).await;
     let embed = CreateEmbed::new()
         .title("central bank")
-        .description(format!("tuxbux reserves: {}", central_bank))
+        .description(format!("tuxbux reserves: {central_bank}"))
         .color(0xFFD700)
         .field(
             "what made the amount in the central bank?".to_string(),

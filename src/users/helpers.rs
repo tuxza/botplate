@@ -6,7 +6,7 @@
 
 use crate::entities::prelude::Users;
 use crate::entities::types::UsersActiveModel;
-use crate::entities::types::*;
+use crate::entities::types::UsersColumn;
 use dashmap::DashMap;
 use sea_orm::{
     ActiveModelTrait, ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait,
@@ -107,8 +107,7 @@ pub async fn get_balance(user_id: i64, database: &DatabaseConnection) -> i64 {
         .await
         .ok()
         .flatten()
-        .map(|u| u.tokens.abs())
-        .unwrap_or(0)
+        .map_or(0, |u| u.tokens.abs())
 }
 
 /// Adjusts a user's token balance atomically.
@@ -172,7 +171,7 @@ pub async fn get_user_xp_and_level(
     }
 
     let user = Users::find_by_id(user_id).one(database).await?;
-    let rank = user.map(|u| (u.xp, u.level)).unwrap_or((0, 0));
+    let rank = user.map_or((0, 0), |u| (u.xp, u.level));
 
     xp_map.insert(user_id, rank);
 

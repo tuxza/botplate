@@ -16,22 +16,19 @@ pub async fn db_add_inv_item(
         .one(database)
         .await?;
 
-    match existing {
-        Some(model) => {
-            let mut active_model: InventoryActiveModel = model.clone().into();
-            active_model.quantity = Set(model.quantity + quantity);
-            Inventory::update(active_model).exec(database).await?;
-        }
-        None => {
-            let active_model = InventoryActiveModel {
-                uid: Set(uid),
-                item_id: Set(item_id.into()),
-                quantity: Set(quantity),
-                acquired_price: Set(acquired_price),
-                can_resell: Set(true),
-            };
-            Inventory::insert(active_model).exec(database).await?;
-        }
+    if let Some(model) = existing {
+        let mut active_model: InventoryActiveModel = model.clone().into();
+        active_model.quantity = Set(model.quantity + quantity);
+        Inventory::update(active_model).exec(database).await?;
+    } else {
+        let active_model = InventoryActiveModel {
+            uid: Set(uid),
+            item_id: Set(item_id.into()),
+            quantity: Set(quantity),
+            acquired_price: Set(acquired_price),
+            can_resell: Set(true),
+        };
+        Inventory::insert(active_model).exec(database).await?;
     }
 
     Ok(())

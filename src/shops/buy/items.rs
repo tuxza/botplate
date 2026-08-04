@@ -28,7 +28,7 @@ pub async fn buy(
     let db_item = db_get_item(&item, &ctx.data().database).await?;
 
     let Some(found_item) = db_item else {
-        ctx.say(format!("No item found matching `{}`.", item))
+        ctx.say(format!("No item found matching `{item}`."))
             .await?;
         return Ok(());
     };

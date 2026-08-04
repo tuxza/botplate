@@ -12,7 +12,7 @@ use crate::users::helpers;
 pub async fn balance(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let author = ctx.author();
     let balance = helpers::get_balance(author.id.get() as i64, &ctx.data().database).await;
-    let _ = ctx.say(format!("Your balance is: {}", balance)).await?;
+    let _ = ctx.say(format!("Your balance is: {balance}")).await?;
     Ok(())
 }
 
@@ -50,7 +50,7 @@ pub async fn rank(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
     )
     .await?;
 
-    ctx.say(format!("You are level {} with {} XP.", level, xp))
+    ctx.say(format!("You are level {level} with {xp} XP."))
         .await?;
 
     Ok(())
@@ -76,8 +76,7 @@ pub async fn gamble(
     }
     if balance < amount {
         ctx.say(format!(
-            "you don't have {} tuxbux to gamble! your balance: {}",
-            amount, balance
+            "you don't have {amount} tuxbux to gamble! your balance: {balance}"
         ))
         .await?;
         return Ok(());
@@ -85,10 +84,10 @@ pub async fn gamble(
     let won = rand::random::<bool>();
     if won {
         helpers::edit_balance(author.id.get() as i64, amount, &ctx.data().database).await?;
-        ctx.say(format!("you won! +{} tuxbux", amount)).await?;
+        ctx.say(format!("you won! +{amount} tuxbux")).await?;
     } else {
         helpers::edit_balance(author.id.get() as i64, -amount, &ctx.data().database).await?;
-        ctx.say(format!("you lost! -{} tuxaroos", amount)).await?;
+        ctx.say(format!("you lost! -{amount} tuxaroos")).await?;
     }
     Ok(())
 }
