@@ -6,15 +6,13 @@ use crate::entities::types::InventoryActiveModel;
 // FUCK THE GITHUB ISSUE I JUST REALIZED ITS THE 29TH
 
 pub async fn db_add_inv_item(
-    uid: i64,
-    item_id: i32,
+    uid: u64,
+    item_id: i64,
     quantity: i64,
     acquired_price: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    let existing = Inventory::find_by_id((uid, item_id.into()))
-        .one(database)
-        .await?;
+    let existing = Inventory::find_by_id((uid, item_id)).one(database).await?;
 
     if let Some(model) = existing {
         let mut active_model: InventoryActiveModel = model.clone().into();
@@ -23,7 +21,7 @@ pub async fn db_add_inv_item(
     } else {
         let active_model = InventoryActiveModel {
             uid: Set(uid),
-            item_id: Set(item_id.into()),
+            item_id: Set(item_id),
             quantity: Set(quantity),
             acquired_price: Set(acquired_price),
             can_resell: Set(true),
@@ -35,7 +33,7 @@ pub async fn db_add_inv_item(
 }
 
 pub async fn db_get_inventory(
-    uid: i64,
+    uid: u64,
     database: &DatabaseConnection,
 ) -> Result<Vec<(String, i64)>, DbErr> {
     use crate::entities::prelude::{Inventory, Items};

@@ -7,17 +7,18 @@
 use crate::entities::prelude::Users;
 use crate::entities::types::UsersActiveModel;
 use crate::entities::types::UsersColumn;
+use crate::global::ensure_user_exists;
 use dashmap::DashMap;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait,
-    sea_query::OnConflict,
+    ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
+    sea_query::Expr, sea_query::OnConflict,
 };
 
 /// Fetches a Unix timestamp of when the user last claimed their daily reward.
 ///
 /// # Arguments
 ///
-/// * `user_id` - The 64-bit Discord ID (or general user ID) of the target user.
+/// * `uid` - The 64-bit Discord ID (or general user ID) of the target user.
 /// * `database` - A reference to the active [`DatabaseConnection`].
 ///
 /// # Returns
@@ -33,8 +34,8 @@ use sea_orm::{
 ///     println!("Last claimed at: {ts}");
 /// }
 /// ```
-pub async fn last_daily(user_id: i64, database: &DatabaseConnection) -> Option<i64> {
-    Users::find_by_id(user_id)
+pub async fn last_daily(uid: u64, database: &DatabaseConnection) -> Option<i64> {
+    Users::find_by_id(uid)
         .one(database)
         .await
         .ok()
@@ -74,9 +75,9 @@ pub fn can_claim_daily(last_daily: Option<i64>) -> bool {
 /// # Returns
 ///
 /// * it returns nothing, lol.. i should fix that.
-pub async fn set_last_daily(user_id: i64, timestamp: i64, database: &DatabaseConnection) {
+pub async fn set_last_daily(uid: u64, timestamp: i64, database: &DatabaseConnection) {
     let active_model = UsersActiveModel {
-        id: Set(user_id),
+        id: Set(uid),
         last_daily: Set(Some(timestamp)),
         ..Default::default()
     };
@@ -101,8 +102,8 @@ pub async fn set_last_daily(user_id: i64, timestamp: i64, database: &DatabaseCon
 /// # Returns
 ///
 /// The user's balance as an `i64` value.
-pub async fn get_balance(user_id: i64, database: &DatabaseConnection) -> i64 {
-    Users::find_by_id(user_id)
+pub async fn get_balance(uid: u64, database: &DatabaseConnection) -> i64 {
+    Users::find_by_id(uid)
         .one(database)
         .await
         .ok()
@@ -132,23 +133,20 @@ pub async fn get_balance(user_id: i64, database: &DatabaseConnection) -> i64 {
 /// edit_balance(123456789, -150, &db).await;
 /// ```
 pub async fn edit_balance(
-    user_id: i64,
+    uid: u64,
     amount: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    let user = Users::find_by_id(user_id).one(database).await?;
+    ensure_user_exists(uid, database).await?;
 
-    match user {
-        Some(model) => {
-            let mut active_model: UsersActiveModel = model.clone().into();
-
-            active_model.tokens = Set(model.tokens + amount);
-            let _ = Users::update(active_model).exec(database).await?;
-        }
-        None => {
-            init_new_user(user_id, amount, database).await?;
-        }
-    }
+    Users::update_many()
+        .col_expr(
+            UsersColumn::Tokens,
+            Expr::col(UsersColumn::Tokens).add(amount),
+        )
+        .filter(UsersColumn::Id.eq(uid))
+        .exec(database)
+        .await?;
 
     Ok(())
 }
@@ -162,47 +160,18 @@ pub async fn edit_balance(
 ///
 /// Returns `(0, 0)` if the user does not exist in either the cache or DB.
 pub async fn get_user_xp_and_level(
-    user_id: i64,
-    xp_map: &DashMap<i64, (i64, i64)>,
+    uid: u64,
+    xp_map: &DashMap<u64, (i64, i64)>,
     database: &DatabaseConnection,
 ) -> Result<(i64, i64), DbErr> {
-    if let Some(entry) = xp_map.get(&user_id) {
+    if let Some(entry) = xp_map.get(&uid) {
         return Ok(*entry);
     }
 
-    let user = Users::find_by_id(user_id).one(database).await?;
+    let user = Users::find_by_id(uid).one(database).await?;
     let rank = user.map_or((0, 0), |u| (u.xp, u.level));
 
-    xp_map.insert(user_id, rank);
+    xp_map.insert(uid, rank);
 
     Ok(rank)
-}
-
-// this is DEFINITELY not an elegant way to do such a thing
-// + this func might be added to global.. maybe
-
-/// Initializes a new user with the given ID and balance, inserting it into the database.
-///
-/// This function is called when a user does not exist in the database, and creates a new record with the given ID and balance. (which may have to be tweaked later.).
-/// Could be replaced by [`ensure_user_exists`]. but ill work that out later.
-pub async fn init_new_user(
-    user_id: i64,
-    amount: i64,
-    database: &DatabaseConnection,
-) -> Result<(), DbErr> {
-    let new_user = UsersActiveModel {
-        id: Set(user_id),
-        tokens: Set(amount),
-        debt: Set(0),
-        last_daily: Set(None),
-        last_job: Set(None),
-        xp: Set(0),
-        level: Set(0),
-        spouse: Set(None),
-        spouse_since: Set(None),
-        joint_balance: Set(None),
-    };
-    let _ = new_user.insert(database).await;
-
-    Ok(())
 }

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // /src/events/central_bank.rs
+#![allow(clippy::unreadable_literal)]
 use crate::entities;
 use crate::global::make_numbers_pretty;
 use poise::serenity_prelude as serenity;
@@ -19,7 +20,7 @@ async fn get_money_get_bread(database: &DatabaseConnection) -> String {
         .await
         .unwrap_or_default();
     let balance = central_bank.map_or(0, |bank| bank.balance);
-    make_numbers_pretty(balance as u64).await
+    make_numbers_pretty(balance).await
 }
 
 /// Deletes every message in the channel, bulk-deleting where possible

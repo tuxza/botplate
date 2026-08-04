@@ -17,7 +17,7 @@ pub async fn db_list_items(
     database: &DatabaseConnection,
 ) -> Result<Vec<Model>, DbErr> {
     let items = Items::find()
-        .filter(ItemsColumn::OriginCid.eq(channel_id.get() as i64))
+        .filter(ItemsColumn::OriginCid.eq(channel_id.get()))
         .all(database)
         .await?;
     Ok(items)
@@ -48,7 +48,7 @@ pub async fn _db_get_item_by_id(
 }
 
 pub async fn db_remove_item(
-    cid: i64,
+    cid: u64,
     name: &str,
     quantity: i64,
     database: &DatabaseConnection,

@@ -4,6 +4,8 @@
 
 // This is the main file, if you'd like to contribute to botplate, please read the CONTRIBUTING.md file.
 
+#![allow(clippy::unreadable_literal)]
+#![allow(clippy::print_stdout)]
 use poise::serenity_prelude as serenity;
 use sea_orm::{Database, DatabaseConnection};
 use std::time::Instant;
@@ -13,8 +15,8 @@ use dashmap::DashMap;
 pub struct Data {
     pub start_time: Instant,
     pub database: DatabaseConnection,
-    pub admins: i64,
-    pub xp_map: DashMap<i64, (i64, i64)>,
+    pub admins: u64,
+    pub xp_map: DashMap<u64, (i64, i64)>,
 }
 
 mod admin;
@@ -27,22 +29,22 @@ mod shops;
 mod users;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), errors::Error> {
     let start = Instant::now();
     println!("starting botplate!");
     dotenvy::dotenv().ok();
 
     let database_url = std::env::var("DATABASE_URL")
-        .expect("hey do you have DATABASE_URL in your env file?! you prolly should!");
-    let db = Database::connect(database_url)
-        .await
-        .expect("failed to connect to database! screw you!");
+        .map_err(|_| errors::Error::Custom("DATABASE_URL not set in env".into()))?;
 
-    let admins = std::env::var("ADMIN")
-        // look at this lazy bum copying the same error message!
-        .expect("hey do you have ADMIN in your env file?! you prolly should!");
+    let db = Database::connect(database_url).await?;
 
-    let admins: i64 = admins.parse().unwrap();
+    let admins =
+        std::env::var("ADMIN").map_err(|_| errors::Error::Custom("ADMIN not set in env".into()))?;
+
+    let admins: i64 = admins
+        .parse()
+        .map_err(|_| errors::Error::Custom("ADMIN is not a valid integer".into()))?;
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -80,14 +82,16 @@ async fn main() {
                 Ok(Data {
                     start_time: start,
                     database: db,
-                    admins,
+                    admins: admins.cast_unsigned(), // we'll do something more elegant later.
                     xp_map: DashMap::new(),
                 })
             })
         })
         .build();
 
-    let token = std::env::var("DISCORD_TOKEN").expect("HEY DUMBASS WHERES THE TOKEN");
+    let token = std::env::var("DISCORD_TOKEN")
+        .map_err(|_| errors::Error::Custom("DISCORD_TOKEN not set in env".into()))?;
+
     let intents = serenity::GatewayIntents::GUILDS
         | serenity::GatewayIntents::GUILD_MESSAGES
         | serenity::GatewayIntents::GUILD_MEMBERS
@@ -95,12 +99,12 @@ async fn main() {
 
     let mut client = serenity::ClientBuilder::new(token, intents)
         .framework(framework)
-        .await
-        .unwrap();
+        .await?;
 
     let elapsed_time = start.elapsed();
     println!("botplate started!");
     println!("Starting took: {} ms", elapsed_time.as_millis());
 
-    client.start().await.unwrap();
+    client.start().await?;
+    Ok(())
 }

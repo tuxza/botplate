@@ -7,10 +7,10 @@
 use sea_orm::{ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 
 use crate::entities::prelude::Items;
-use crate::entities::types::{ItemsColumn, ItemsActiveModel};
+use crate::entities::types::{ItemsActiveModel, ItemsColumn};
 
 pub async fn add_item(
-    cid: i64,
+    cid: u64,
     name: String,
     description: String,
     item_type: String,

@@ -10,8 +10,8 @@ use poise::serenity_prelude::{self as serenity, Mentionable};
 
 /// manage your shops
 #[poise::command(slash_command, prefix_command, subcommands("create", "delete"))]
-pub async fn shop(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
-    _ctx.say("bro go AWAY").await?;
+pub async fn shop(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+    ctx.say("bro go AWAY").await?;
     Ok(())
 }
 
@@ -19,7 +19,8 @@ use crate::shops::sell::items::remove;
 use crate::shops::sell::items::sell;
 
 #[poise::command(slash_command, prefix_command, subcommands("sell", "remove"))]
-pub async fn items(_ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+pub async fn items(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+    ctx.say("no items here brother").await?;
     Ok(())
 }
 
@@ -29,7 +30,7 @@ pub async fn create(
     ctx: poise::Context<'_, crate::Data, Error>,
     #[description = "The name of your new business"] channel_name: String,
 ) -> Result<(), Error> {
-    let guild_id = ctx.guild().unwrap().id;
+    let guild_id = ctx.guild().ok_or(Error::Custom("no guild".to_string()))?.id; // holy shit this is so fucking funny
     let user_id = ctx.author().id;
 
     let channel_id = helpers::create_shop(

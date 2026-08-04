@@ -15,40 +15,37 @@ pub struct SysInfo {
     pub bot_memory: u64,
 }
 
-#[allow(dead_code)]
-pub async fn fn_that_returns_zero_lol() -> u64 {
-    0
-}
-
-pub async fn get_sysinfo() -> SysInfo {
+pub fn get_sysinfo() -> Option<SysInfo> {
     let mut sys = System::new();
     sys.refresh_all();
 
-    let pid = sysinfo::get_current_pid().expect("fuck you, failed to get PID for some reason");
+    let pid = sysinfo::get_current_pid().ok()?;
 
     let bot_memory = sys.process(pid).map_or(0, sysinfo::Process::memory);
 
     // h = host if you cant read
 
-    SysInfo {
+    Some(SysInfo {
         os_name: System::name(),
         os_vers: System::os_version(),
         h_used_memory: sys.used_memory(),
         h_total_memory: sys.total_memory(),
         h_uptime: System::uptime(),
         bot_memory,
-    }
+    })
 }
 
-pub async fn convert_bytes_2_gigabytes(bytes: u64) -> String {
+#[allow(clippy::cast_precision_loss)]
+pub fn convert_bytes_2_gigabytes(bytes: u64) -> String {
     format!("{:.2} GB", bytes as f64 / 1024.0 / 1024.0 / 1024.0)
 }
 
-pub async fn convert_bytes_2_megabytes(bytes: u64) -> String {
+#[allow(clippy::cast_precision_loss)]
+pub fn convert_bytes_2_megabytes(bytes: u64) -> String {
     format!("{:.2} MB", bytes as f64 / 1024.0 / 1024.0)
 }
 
-pub async fn convert_uptime_2_human(uptime: u64) -> String {
+pub fn convert_uptime_2_human(uptime: u64) -> String {
     let seconds = uptime % 60;
     let minutes = (uptime / 60) % 60;
     let hours = (uptime / 3600) % 24;

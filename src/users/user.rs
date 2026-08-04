@@ -11,7 +11,7 @@ use crate::users::helpers;
 #[poise::command(prefix_command, slash_command)]
 pub async fn balance(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let author = ctx.author();
-    let balance = helpers::get_balance(author.id.get() as i64, &ctx.data().database).await;
+    let balance = helpers::get_balance(author.id.get(), &ctx.data().database).await;
     let _ = ctx.say(format!("Your balance is: {balance}")).await?;
     Ok(())
 }
@@ -20,7 +20,7 @@ pub async fn balance(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), 
 #[poise::command(prefix_command, slash_command)]
 pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let author = ctx.author();
-    let last = helpers::last_daily(author.id.get() as i64, &ctx.data().database).await;
+    let last = helpers::last_daily(author.id.get(), &ctx.data().database).await;
 
     if !helpers::can_claim_daily(last) {
         ctx.say("you already claimed your daily today! come back later please.")
@@ -28,9 +28,9 @@ pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Er
         return Ok(());
     }
 
-    helpers::edit_balance(author.id.get() as i64, 100, &ctx.data().database).await?; // tux reminder: make this configurable because your so nice
+    helpers::edit_balance(author.id.get(), 100, &ctx.data().database).await?; // tux reminder: make this configurable because your so nice
     helpers::set_last_daily(
-        author.id.get() as i64,
+        author.id.get(),
         chrono::Utc::now().timestamp(),
         &ctx.data().database,
     )
@@ -43,12 +43,9 @@ pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Er
 #[poise::command(prefix_command, slash_command)]
 pub async fn rank(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let author = ctx.author();
-    let (xp, level) = helpers::get_user_xp_and_level(
-        author.id.get() as i64,
-        &ctx.data().xp_map,
-        &ctx.data().database,
-    )
-    .await?;
+    let (xp, level) =
+        helpers::get_user_xp_and_level(author.id.get(), &ctx.data().xp_map, &ctx.data().database)
+            .await?;
 
     ctx.say(format!("You are level {level} with {xp} XP."))
         .await?;
@@ -68,7 +65,7 @@ pub async fn gamble(
     #[description = "how many tuxbux to gamble"] amount: i64,
 ) -> Result<(), Error> {
     let author = ctx.author();
-    let balance = helpers::get_balance(author.id.get() as i64, &ctx.data().database).await;
+    let balance = helpers::get_balance(author.id.get(), &ctx.data().database).await;
     if amount <= 0 {
         ctx.say("you gotta gamble a positive amount, dummy.")
             .await?;
@@ -83,10 +80,10 @@ pub async fn gamble(
     }
     let won = rand::random::<bool>();
     if won {
-        helpers::edit_balance(author.id.get() as i64, amount, &ctx.data().database).await?;
+        helpers::edit_balance(author.id.get(), amount, &ctx.data().database).await?;
         ctx.say(format!("you won! +{amount} tuxbux")).await?;
     } else {
-        helpers::edit_balance(author.id.get() as i64, -amount, &ctx.data().database).await?;
+        helpers::edit_balance(author.id.get(), -amount, &ctx.data().database).await?;
         ctx.say(format!("you lost! -{amount} tuxaroos")).await?;
     }
     Ok(())
