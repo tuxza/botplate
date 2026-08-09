@@ -35,7 +35,7 @@ use sea_orm::{
 /// }
 /// ```
 pub async fn last_daily(uid: u64, database: &DatabaseConnection) -> Option<i64> {
-    Users::find_by_id(uid)
+    Users::find_by_id(uid.cast_signed())
         .one(database)
         .await
         .ok()
@@ -77,7 +77,7 @@ pub fn can_claim_daily(last_daily: Option<i64>) -> bool {
 /// * it returns nothing, lol.. i should fix that.
 pub async fn set_last_daily(uid: u64, timestamp: i64, database: &DatabaseConnection) {
     let active_model = UsersActiveModel {
-        id: Set(uid),
+        id: Set(uid.cast_signed()),
         last_daily: Set(Some(timestamp)),
         ..Default::default()
     };
@@ -103,7 +103,7 @@ pub async fn set_last_daily(uid: u64, timestamp: i64, database: &DatabaseConnect
 ///
 /// The user's balance as an `i64` value.
 pub async fn get_balance(uid: u64, database: &DatabaseConnection) -> i64 {
-    Users::find_by_id(uid)
+    Users::find_by_id(uid.cast_signed())
         .one(database)
         .await
         .ok()
@@ -168,7 +168,7 @@ pub async fn get_user_xp_and_level(
         return Ok(*entry);
     }
 
-    let user = Users::find_by_id(uid).one(database).await?;
+    let user = Users::find_by_id(uid.cast_signed()).one(database).await?;
     let rank = user.map_or((0, 0), |u| (u.xp, u.level));
 
     xp_map.insert(uid, rank);

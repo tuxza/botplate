@@ -21,5 +21,4 @@ migration state and are marked as such in their header comment
 sea-orm-cli generate entity -o src/entities
 ```
 
-The two exceptions (kind of) is `src/entities/types.rs`, which is a hand-written file of
-type aliases, and in users.rs, the `id` field is changed to `u64` from `i64` due to serenity's `User::id` field being a `u64`.
+The exception (kind of) is `src/entities/types.rs`, which is a hand-written file of type aliases.

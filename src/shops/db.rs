@@ -17,8 +17,8 @@ pub async fn db_create_channel(
     crate::global::ensure_user_exists(user_id.get(), database).await?;
 
     let active_model = ChannelsActiveModel {
-        cid: Set(new_channel_id.get()),
-        uid: Set(user_id.get()),
+        cid: Set(new_channel_id.get().cast_signed()),
+        uid: Set(user_id.get().cast_signed()),
         in_stock_market: Set(false),
     };
 
@@ -42,7 +42,7 @@ pub async fn db_get_shop_channel_id(
         .filter(ChannelsColumn::Uid.eq(uid))
         .one(database)
         .await?;
-    Ok(channel.map(|c| ChannelId::new(c.cid)))
+    Ok(channel.map(|c| ChannelId::new(c.cid.cast_unsigned())))
 }
 
 pub async fn db_get_shop_owner_id(
@@ -54,7 +54,7 @@ pub async fn db_get_shop_owner_id(
         .one(database)
         .await?;
 
-    Ok(channel.map(|c| UserId::new(c.uid)))
+    Ok(channel.map(|c| UserId::new(c.uid.cast_unsigned())))
 }
 
 pub async fn db_delete_shop(uid: UserId, database: &DatabaseConnection) -> Result<(), DbErr> {
@@ -96,7 +96,7 @@ pub async fn db_verify_shop(
         .await?;
 
     Ok(match channel {
-        Some(c) => c.uid == uid,
+        Some(c) => c.uid == uid.cast_signed(),
         None => false,
     })
 }

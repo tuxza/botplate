@@ -34,7 +34,7 @@ pub async fn on_message(
     // we dont have to ask the DB everytime someone sends a message.
     // i (hope) this is faster than querying the database. (i hope.)
     if !xp_map.contains_key(&uid) {
-        let (xp, level) = Users::find_by_id(uid)
+        let (xp, level) = Users::find_by_id(uid.cast_signed())
             .one(database)
             .await?
             .map_or((0, 0), |u| (u.xp, u.level));
@@ -99,7 +99,7 @@ async fn level_up(
     database: &DatabaseConnection,
 ) -> Result<(), Error> {
     let active_model = UsersActiveModel {
-        id: Set(uid),
+        id: Set(uid.cast_signed()),
         xp: Set(xp),
         level: Set(level),
         ..Default::default()

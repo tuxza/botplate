@@ -38,7 +38,7 @@ pub async fn add_item(
             item_type: Set(item_type),
             price: Set(price),
             quantity: Set(quantity),
-            origin_cid: Set(Some(cid)),
+            origin_cid: Set(Some(cid.cast_signed())),
             ..Default::default()
         };
         Items::insert(active_model).exec(database).await?;

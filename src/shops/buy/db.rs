@@ -59,8 +59,8 @@ pub async fn db_remove_item(
             Expr::col(ItemsColumn::Quantity).sub(quantity),
         )
         .filter(ItemsColumn::Name.eq(name))
-        .filter(ItemsColumn::OriginCid.eq(cid))
-        .filter(ItemsColumn::Quantity.gte(quantity)) // <- the whole race fix lives here
+        .filter(ItemsColumn::OriginCid.eq(cid.cast_signed()))
+        .filter(ItemsColumn::Quantity.gte(quantity))
         .exec(database)
         .await?;
 

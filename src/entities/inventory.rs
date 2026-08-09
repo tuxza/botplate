@@ -6,7 +6,7 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(table_name = "inventory")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub uid: u64,
+    pub uid: i64,
     #[sea_orm(primary_key, auto_increment = false)]
     pub item_id: i64,
     pub quantity: i64,

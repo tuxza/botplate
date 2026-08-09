@@ -16,7 +16,7 @@ use sea_orm::{ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait};
 /// starting balance, debt, xp, etc. of 0 if it doesn't. No-op if the user already exists.
 pub async fn ensure_user_exists(uid: u64, database: &DatabaseConnection) -> Result<(), DbErr> {
     let active_model = UsersActiveModel {
-        id: Set(uid),
+        id: Set(uid.cast_signed()),
         tokens: Set(0),
         debt: Set(0),
         last_daily: Set(None),

@@ -12,7 +12,9 @@ pub async fn db_add_inv_item(
     acquired_price: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    let existing = Inventory::find_by_id((uid, item_id)).one(database).await?;
+    let existing = Inventory::find_by_id((uid.cast_signed(), item_id))
+        .one(database)
+        .await?;
 
     if let Some(model) = existing {
         let mut active_model: InventoryActiveModel = model.clone().into();
@@ -20,7 +22,7 @@ pub async fn db_add_inv_item(
         Inventory::update(active_model).exec(database).await?;
     } else {
         let active_model = InventoryActiveModel {
-            uid: Set(uid),
+            uid: Set(uid.cast_signed()),
             item_id: Set(item_id),
             quantity: Set(quantity),
             acquired_price: Set(acquired_price),

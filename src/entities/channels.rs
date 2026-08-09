@@ -6,8 +6,8 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(table_name = "channels")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub cid: u64,
-    pub uid: u64,
+    pub cid: i64,
+    pub uid: i64,
     pub in_stock_market: bool,
 }
 

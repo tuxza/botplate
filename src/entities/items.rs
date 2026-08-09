@@ -12,7 +12,7 @@ pub struct Model {
     pub item_type: String,
     pub quantity: i64,
     pub price: i64,
-    pub origin_cid: Option<u64>,
+    pub origin_cid: Option<i64>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
