@@ -107,7 +107,7 @@ pub async fn get_balance(user_id: i64, database: &DatabaseConnection) -> i64 {
         .await
         .ok()
         .flatten()
-        .map(|u| u.tokens.abs())
+        .map(|u| u.tokens)
         .unwrap_or(0)
 }
 
