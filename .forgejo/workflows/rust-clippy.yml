@@ -1,0 +1,26 @@
+name: rust-clippy analyze
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: '35 6 * * 3'
+
+jobs:
+  rust-clippy-analyze:
+    name: Run rust-clippy analyzing
+    runs-on: docker
+    container:
+      image: rust:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install clippy component
+        run: rustup component add clippy
+
+      - name: Run rust-clippy
+        run: cargo clippy --all-features --message-format=json
+        continue-on-error: false
