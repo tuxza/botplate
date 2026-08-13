@@ -1,11 +1,9 @@
 name: rust analyze
-
 on:
   push:
     branches: [ "master" ]
   schedule:
     - cron: '35 6 * * 3'
-
 jobs:
   rust-clippy-analyze:
     name: Run rust-clippy analyzing
@@ -14,11 +12,20 @@ jobs:
       - name: Checkout code
         run: |
           rm -rf ./* .git || true
-
-          # Clone safely, using the Forgejo token in case the repo is private
           git -c http.extraheader="AUTHORIZATION: bearer ${{ forgejo.token }}" \
             clone --depth 1 --branch ${{ forgejo.ref_name }} \
             ${{ forgejo.server_url }}/${{ forgejo.repository }}.git .
+
+      - name: Cache cargo registry and target
+        uses: https://code.forgejo.org/actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ forgejo.repository }}-cargo-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            ${{ forgejo.repository }}-cargo-
 
       - name: Install clippy
         run: rustup component add clippy
