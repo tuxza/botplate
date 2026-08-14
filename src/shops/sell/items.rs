@@ -6,7 +6,7 @@
 
 use crate::errors::Error;
 use crate::shops::buy::db::db_remove_item;
-use crate::shops::db::db_verify_shop; // tuxnote, put this in global *maybe*
+use crate::shops::db::db_verify_shop_owner;
 use crate::shops::sell::db;
 
 #[poise::command(slash_command, prefix_command)]
@@ -17,10 +17,10 @@ pub async fn sell(
     #[description = "how many to list"] quantity: i64,
     #[description = "description"] description: Option<String>,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get();
+    let uid = ctx.author().id.get().cast_signed();
     let cid = ctx.channel_id().get();
 
-    if !db_verify_shop(uid, cid, &ctx.data().database).await? {
+    if !db_verify_shop_owner(uid, cid.cast_signed(), &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;
         return Ok(());
     }
@@ -55,7 +55,14 @@ pub async fn remove(
     #[description = "item name"] name: String,
     #[description = "quantity"] quantity: i64,
 ) -> Result<(), Error> {
-    let cid = ctx.channel_id().get();
+    let uid = ctx.author().id.get().cast_signed();
+    let cid = ctx.channel_id().get().cast_signed();
+
+    if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
+        ctx.say("this isn't your shop!").await?;
+        return Ok(());
+    }
+
     db_remove_item(cid, name.as_str(), quantity, &ctx.data().database).await?;
     ctx.say(format!("removed {name} x{quantity}")).await?;
     Ok(())

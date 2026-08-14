@@ -5,9 +5,11 @@ use poise::serenity_prelude::CreateEmbed;
 #[poise::command(prefix_command, slash_command)]
 pub async fn inventory(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let author = ctx.author();
-    let items =
-        crate::users::inventory::db::db_get_inventory(author.id.get(), &ctx.data().database)
-            .await?;
+    let items = crate::users::inventory::db::db_get_inventory(
+        author.id.get().cast_signed(),
+        &ctx.data().database,
+    )
+    .await?;
 
     if items.is_empty() {
         ctx.say("your inventory is empty!").await?;

@@ -102,13 +102,13 @@ pub async fn set_last_daily(uid: u64, timestamp: i64, database: &DatabaseConnect
 /// # Returns
 ///
 /// The user's balance as an `i64` value.
-pub async fn get_balance(uid: u64, database: &DatabaseConnection) -> i64 {
-    Users::find_by_id(uid.cast_signed())
+pub async fn get_balance(uid: i64, database: &DatabaseConnection) -> i64 {
+    Users::find_by_id(uid)
         .one(database)
         .await
         .ok()
         .flatten()
-        .map_or(0, |u| u.tokens.abs())
+        .map_or(0, |u| u.tokens)
 }
 
 /// Adjusts a user's token balance atomically.
@@ -133,7 +133,7 @@ pub async fn get_balance(uid: u64, database: &DatabaseConnection) -> i64 {
 /// edit_balance(123456789, -150, &db).await;
 /// ```
 pub async fn edit_balance(
-    uid: u64,
+    uid: i64,
     amount: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
