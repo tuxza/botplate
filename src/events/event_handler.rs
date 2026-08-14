@@ -48,7 +48,7 @@ pub async fn on_guild_join(
     new_member: &serenity::Member,
 ) -> Result<(), Error> {
     let uid = new_member.user.id.get();
-    global::ensure_user_exists(uid, db).await?;
+    global::ensure_user_exists(uid.cast_signed(), db).await?;
 
     println!("User {} joined the guild.", new_member.user.name);
     Ok(())

@@ -17,10 +17,10 @@ pub async fn sell(
     #[description = "how many to list"] quantity: i64,
     #[description = "description"] description: Option<String>,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get();
+    let uid = ctx.author().id.get().cast_signed();
     let cid = ctx.channel_id().get();
 
-    if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
+    if !db_verify_shop_owner(uid, cid.cast_signed(), &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;
         return Ok(());
     }
@@ -55,8 +55,8 @@ pub async fn remove(
     #[description = "item name"] name: String,
     #[description = "quantity"] quantity: i64,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get() as i64;
-    let cid = ctx.channel_id().get() as i64;
+    let uid = ctx.author().id.get().cast_signed();
+    let cid = ctx.channel_id().get().cast_signed();
 
     if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;

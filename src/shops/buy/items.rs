@@ -8,7 +8,7 @@ use crate::shops::buy::db::db_remove_item;
 use crate::shops::db::db_verify_shop_exists;
 use crate::users::inventory::db::db_add_inv_item;
 
-use crate::{errors::Error, shops::buy::db::db_get_item};
+use crate::{errors::Error, shops::buy::db::db_get_item, shops::db::db_get_shop_owner_id};
 
 #[poise::command(slash_command, prefix_command)]
 pub async fn buy(
@@ -16,8 +16,8 @@ pub async fn buy(
     #[description = "name of the item to buy"] item: String,
     #[description = "how many you want"] quantity: i64,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get();
-    let cid = ctx.channel_id().get();
+    let uid = ctx.author().id.get().cast_signed();
+    let cid = ctx.channel_id().get().cast_signed();
 
     if !db_verify_shop_exists(cid, &ctx.data().database).await? {
         ctx.say("this isn't a shop!").await?;
@@ -52,7 +52,7 @@ pub async fn buy(
     let uid = owner.get();
     let amount = acquired_price;
 
-    crate::users::helpers::edit_balance(uid, amount, database).await?;
+    crate::users::helpers::edit_balance(uid.cast_signed(), amount, database).await?;
 
     // couldnt think of a name, sorry
     // maybe ill make this standard across the codebase...
