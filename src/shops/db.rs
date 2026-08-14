@@ -76,7 +76,7 @@ pub async fn db_delete_channel_by_cid(
     Ok(())
 }
 
-pub async fn db_verify_shop(
+pub async fn db_verify_shop_owner(
     uid: i64,
     cid: i64,
     database: &DatabaseConnection,
@@ -90,4 +90,13 @@ pub async fn db_verify_shop(
         Some(c) => c.uid == uid,
         None => false,
     })
+}
+
+pub async fn db_verify_shop_exists(cid: i64, database: &DatabaseConnection) -> Result<bool, DbErr> {
+    let channel = Channels::find()
+        .filter(ChannelsColumn::Cid.eq(cid))
+        .one(database)
+        .await?;
+
+    Ok(channel.is_some())
 }
