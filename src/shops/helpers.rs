@@ -16,16 +16,18 @@ use serenity::model::permissions::Permissions;
 use std::collections::HashMap;
 
 use crate::errors::Error;
-use crate::shops::db::*;
+use crate::shops::db::{
+    db_create_channel, db_delete_shop, db_get_shop_channel_id, db_user_has_shop,
+};
 
 pub async fn create_shop(
     http: &Http,
     guild_id: GuildId,
-    user_id: UserId,
+    uid: UserId,
     channel_name: String,
     database: &DatabaseConnection,
 ) -> Result<ChannelId, Error> {
-    if db_user_has_shop(user_id, database).await? {
+    if db_user_has_shop(uid, database).await? {
         return Err(Error::Custom("you already own a shop!".into()));
     }
     let channels = guild_id.channels(http).await?;
@@ -33,7 +35,7 @@ pub async fn create_shop(
     let user_overwrites = PermissionOverwrite {
         allow: Permissions::MANAGE_CHANNELS | Permissions::VIEW_CHANNEL,
         deny: Permissions::empty(),
-        kind: PermissionOverwriteType::Member(user_id),
+        kind: PermissionOverwriteType::Member(uid),
     };
     let mut create_channel = CreateChannel::new(&channel_name)
         .kind(ChannelType::Text)
@@ -42,22 +44,22 @@ pub async fn create_shop(
         create_channel = create_channel.category(cat_id);
     }
     let new_channel = guild_id.create_channel(http, create_channel).await?;
-    db_create_channel(new_channel.id, user_id, database).await?;
+    db_create_channel(new_channel.id, uid, database).await?;
     Ok(new_channel.id)
 }
 
 pub async fn delete_shop(
     http: &Http,
-    user_id: UserId,
+    uid: UserId,
     database: &DatabaseConnection,
 ) -> Result<(), Error> {
     let audit_log_reason = "Deleted by user.";
 
-    let Some(channel_id) = db_get_shop_channel_id(user_id, database).await? else {
+    let Some(channel_id) = db_get_shop_channel_id(uid.get(), database).await? else {
         return Err(Error::Custom("you don't own a shop!".into()));
     };
 
-    db_delete_shop(user_id, database).await?;
+    db_delete_shop(uid, database).await?;
     http.delete_channel(channel_id, Some(audit_log_reason))
         .await?;
 

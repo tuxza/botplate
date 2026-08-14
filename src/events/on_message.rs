@@ -1,5 +1,10 @@
-// src/events/event_handler.rs (or wherever on_message lands)
+// Copyright (C) 2026 Tuxzilla <tuxzilla@tuxzilla.com>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
+// src/events/event_handler.rs
+
+#![allow(clippy::unreadable_literal)]
 use dashmap::DashMap;
 use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::Mentionable;
@@ -15,7 +20,7 @@ use crate::errors::Error;
 pub async fn on_message(
     new_message: &serenity::Message,
     ctx: &serenity::Context,
-    xp_map: &DashMap<i64, (i64, i64)>,
+    xp_map: &DashMap<u64, (i64, i64)>,
     database: &DatabaseConnection,
     xp_per_level: i64,
 ) -> Result<(), Error> {
@@ -23,17 +28,16 @@ pub async fn on_message(
         return Ok(());
     }
 
-    let uid = new_message.author.id.get() as i64;
+    let uid = new_message.author.id.get();
 
     // if the user is not in the map, fetch their xp/level from the database. so yk..
     // we dont have to ask the DB everytime someone sends a message.
     // i (hope) this is faster than querying the database. (i hope.)
     if !xp_map.contains_key(&uid) {
-        let (xp, level) = Users::find_by_id(uid)
+        let (xp, level) = Users::find_by_id(uid.cast_signed())
             .one(database)
             .await?
-            .map(|u| (u.xp, u.level))
-            .unwrap_or((0, 0));
+            .map_or((0, 0), |u| (u.xp, u.level));
         xp_map.insert(uid, (xp, level));
     }
 
@@ -45,7 +49,7 @@ pub async fn on_message(
     {
         let mut entry = xp_map
             .get_mut(&uid)
-            .expect("just added or already present #fuck");
+            .ok_or(Error::Custom("something exploded".to_string()))?;
         entry.0 += xp_gained;
 
         let next_level_xp = xp_per_level * (entry.1 + 1);
@@ -71,11 +75,7 @@ pub async fn on_message(
                 new_message.author.mention(),
                 new_level
             ))
-            .field(
-                "tuxbux earned",
-                format!("**{} tuxbux**", tokens_earned),
-                true,
-            )
+            .field("tuxbux earned", format!("**{tokens_earned} tuxbux**"), true)
             .color(0xFFD700);
 
         new_message
@@ -93,13 +93,13 @@ pub async fn on_message(
 // but i dont follow my own rules.
 
 async fn level_up(
-    uid: i64,
+    uid: u64,
     xp: i64,
     level: i64,
     database: &DatabaseConnection,
 ) -> Result<(), Error> {
     let active_model = UsersActiveModel {
-        id: Set(uid),
+        id: Set(uid.cast_signed()),
         xp: Set(xp),
         level: Set(level),
         ..Default::default()

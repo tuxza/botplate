@@ -6,7 +6,7 @@ use poise::serenity_prelude::CreateEmbed;
 pub async fn inventory(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let author = ctx.author();
     let items =
-        crate::users::inventory::db::db_get_inventory(author.id.get() as i64, &ctx.data().database)
+        crate::users::inventory::db::db_get_inventory(author.id.get(), &ctx.data().database)
             .await?;
 
     if items.is_empty() {
@@ -16,14 +16,14 @@ pub async fn inventory(ctx: poise::Context<'_, crate::Data, Error>) -> Result<()
 
     let list = items
         .iter()
-        .map(|(name, qty)| format!("**{}** x{}", name, qty))
+        .map(|(name, qty)| format!("**{name}** x{qty}"))
         .collect::<Vec<_>>()
         .join("\n");
 
     let embed = CreateEmbed::new()
         .color(0x7492B9)
         .title("your inventory")
-        .field("items", format!("\n{}", list), false)
+        .field("items", format!("\n{list}"), false)
         .footer(random_footer().await);
 
     let reply = poise::CreateReply::default().embed(embed);

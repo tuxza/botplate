@@ -13,14 +13,10 @@ use sea_orm::sea_query::OnConflict;
 use sea_orm::{ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait};
 
 /// Ensures a user row exists in the database, creating one with a
-/// starting balance of 0 if it doesn't. No-op if the user already exists.
-///
-/// This exists because other tables (e.g. `channels`) have FK constraints
-/// pointing at `users.id`, and callers that create those rows can't assume
-/// the referenced user row is already there (e.g. their row was wiped)
-pub async fn ensure_user_exists(user_id: i64, database: &DatabaseConnection) -> Result<(), DbErr> {
+/// starting balance, debt, xp, etc. of 0 if it doesn't. No-op if the user already exists.
+pub async fn ensure_user_exists(uid: u64, database: &DatabaseConnection) -> Result<(), DbErr> {
     let active_model = UsersActiveModel {
-        id: Set(user_id),
+        id: Set(uid.cast_signed()),
         tokens: Set(0),
         debt: Set(0),
         last_daily: Set(None),
@@ -42,11 +38,11 @@ pub async fn ensure_user_exists(user_id: i64, database: &DatabaseConnection) -> 
 
 // this could be a lot more elegant and nice to work with, but.. im a lazy ass.
 
-pub async fn is_admin(author: i64, admins: i64) -> bool {
+pub fn is_admin(author: u64, admins: u64) -> bool {
     author == admins
 }
 
-pub async fn make_numbers_pretty(num: u64) -> String {
+pub async fn make_numbers_pretty(num: i64) -> String {
     let s = num.to_string();
     let mut result = String::new();
 
@@ -62,7 +58,7 @@ pub async fn make_numbers_pretty(num: u64) -> String {
 
 pub async fn random_footer() -> CreateEmbedFooter {
     let mut rng = rand::rng();
-    let version = "v0.1.5"; // it would be a lot smarter to make this a constant but i only call it once so shut up
+    let version = env!("CARGO_PKG_VERSION");
     let messages = [
         "botplate-rs is cool",
         "check out our github repo!",
@@ -76,12 +72,10 @@ pub async fn random_footer() -> CreateEmbedFooter {
         "billions must love",
         "wait what is this server again",
         "tuxzilla vs making a good bot",
+        "mold -run cargo build --release",
     ];
     let Some(message) = messages.choose(&mut rng) else {
-        return CreateEmbedFooter::new(format!("botplate-rs reimagined | {}", version));
+        return CreateEmbedFooter::new(format!("botplate-rs reimagined | {version}"));
     };
-    CreateEmbedFooter::new(format!(
-        "{} | botplate-rs reimagined | {}",
-        message, version
-    ))
+    CreateEmbedFooter::new(format!("{message} | botplate-rs reimagined | {version}"))
 }

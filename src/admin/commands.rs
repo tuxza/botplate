@@ -17,7 +17,7 @@ pub async fn rule(
 pub async fn resend_rules(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let admins = ctx.data().admins;
     let author = ctx.author();
-    if !crate::global::is_admin(author.id.get() as i64, admins).await {
+    if !crate::global::is_admin(author.id.get(), admins) {
         return Err(Error::Custom("you are not an admin".to_string()));
     }
 

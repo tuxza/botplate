@@ -6,6 +6,7 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(table_name = "users")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
+    // tuxzilla has now learned that no, you can not store u64 in the database.
     pub id: i64,
     pub tokens: i64,
     pub debt: i64,

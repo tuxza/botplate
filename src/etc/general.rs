@@ -4,6 +4,7 @@
 
 // /src/etc/general.rs
 
+#![allow(clippy::unreadable_literal)]
 use poise::serenity_prelude::{self as serenity};
 
 use crate::etc::helpers;
@@ -26,18 +27,15 @@ pub async fn ping(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
 
     let ws_latency_string = runners
         .get(&ctx.serenity_context().shard_id)
-        .and_then(|r| r.latency)
-        .map(|d| format!("{}ms", d.as_millis()))
-        .unwrap_or_else(|| {
+        .and_then(|r| r.latency).map_or_else(|| {
             "awaiting heartbeat... the bot probably just started. run a slash command and retry."
                 .to_string()
-        });
+        }, |d| format!("{}ms", d.as_millis()));
 
     msg.edit(
         ctx,
         poise::CreateReply::default().content(format!(
-            "Pong! 🏓\nWebSocket Latency: **{}**\nAPI Latency: **{}ms**",
-            ws_latency_string, edit_latency
+            "Pong! 🏓\nWebSocket Latency: **{ws_latency_string}**\nAPI Latency: **{edit_latency}ms**"
         )),
     )
     .await?;
@@ -48,7 +46,13 @@ pub async fn ping(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
 /// get information about botplate!
 #[poise::command(slash_command)]
 pub async fn info(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
-    let sys = helpers::get_sysinfo().await;
+    // Safely destructure the Option without panicking.
+    // If it fails, we return an error message to the Discord context.
+    let Some(sys) = helpers::get_sysinfo() else {
+        ctx.say("❌ Failed to retrieve system statistics.").await?;
+        return Ok(());
+    };
+
     let bot_uptime = ctx.data().start_time.elapsed().as_secs();
 
     let info_embed = serenity::CreateEmbed::new()
@@ -56,12 +60,12 @@ pub async fn info(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
         .description("botplate is the finishing piece for a simulation of a low effort economy of the micronation of baseplate, handling everything from taxes, businesses, and jailing citizens. tux this description is so ASS make a better one")
         .field(
             "Bot Uptime",
-            helpers::convert_uptime_2_human(bot_uptime).await.to_string(),
+            helpers::convert_uptime_2_human(bot_uptime),
             false,
         )
         .field(
             "Host Uptime",
-            helpers::convert_uptime_2_human(sys.h_uptime).await.to_string(),
+            helpers::convert_uptime_2_human(sys.h_uptime),
             false,
         )
         .field(
@@ -75,15 +79,15 @@ pub async fn info(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
         )
         .field(
             "Bot Memory",
-            helpers::convert_bytes_2_megabytes(sys.bot_memory).await.to_string(),
+            helpers::convert_bytes_2_megabytes(sys.bot_memory),
             false,
         )
         .field(
             "Host Memory",
             format!(
                 "{} / {}",
-                helpers::convert_bytes_2_gigabytes(sys.h_used_memory).await,
-                helpers::convert_bytes_2_gigabytes(sys.h_total_memory).await
+                helpers::convert_bytes_2_gigabytes(sys.h_used_memory),
+                helpers::convert_bytes_2_gigabytes(sys.h_total_memory)
             ),
             false,
         )

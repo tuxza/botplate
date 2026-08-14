@@ -16,8 +16,8 @@ pub async fn buy(
     #[description = "name of the item to buy"] item: String,
     #[description = "how many you want"] quantity: i64,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get() as i64;
-    let cid = ctx.channel_id().get() as i64;
+    let uid = ctx.author().id.get();
+    let cid = ctx.channel_id().get();
 
     if !db_verify_shop_exists(cid, &ctx.data().database).await? {
         ctx.say("this isn't a shop!").await?;
@@ -27,21 +27,32 @@ pub async fn buy(
     let db_item = db_get_item(&item, &ctx.data().database).await?;
 
     let Some(found_item) = db_item else {
-        ctx.say(format!("No item found matching `{}`.", item))
-            .await?;
+        ctx.say(format!("No item found matching `{item}`.")).await?;
         return Ok(());
     };
 
     let item_id = found_item.id;
     let acquired_price = found_item.price * quantity;
 
-    let user_id = ctx.author().id.get() as i64;
     let amount = -acquired_price;
     let database = &ctx.data().database;
 
-    crate::users::helpers::edit_balance(user_id, amount, database).await?;
+    crate::users::helpers::edit_balance(uid, amount, database).await?;
 
     db_add_inv_item(uid, item_id, quantity, acquired_price, &ctx.data().database).await?;
+
+    let owner_id = db_get_shop_owner_id(cid, &ctx.data().database).await?;
+
+    let Some(owner) = owner_id else {
+        return Err(Error::Custom(
+            "Internal error. Could not find shop owner.".to_string(),
+        ));
+    }; // this check might not be neccessary, but nonetheless
+    // shadow user_id and amount for the shop owner now!!
+    let uid = owner.get();
+    let amount = acquired_price;
+
+    crate::users::helpers::edit_balance(uid, amount, database).await?;
 
     // couldnt think of a name, sorry
     // maybe ill make this standard across the codebase...

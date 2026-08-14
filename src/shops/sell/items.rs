@@ -17,8 +17,8 @@ pub async fn sell(
     #[description = "how many to list"] quantity: i64,
     #[description = "description"] description: Option<String>,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get() as i64;
-    let cid = ctx.channel_id().get() as i64;
+    let uid = ctx.author().id.get();
+    let cid = ctx.channel_id().get();
 
     if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;
@@ -43,8 +43,7 @@ pub async fn sell(
     .await?;
 
     ctx.say(format!(
-        "listed **{}** x{} for {} tuxbux each",
-        name, quantity, price
+        "listed **{name}** x{quantity} for {price} tuxbux each"
     ))
     .await?;
     Ok(())
@@ -65,6 +64,6 @@ pub async fn remove(
     }
 
     db_remove_item(cid, name.as_str(), quantity, &ctx.data().database).await?;
-    ctx.say(format!("removed {} x{}", name, quantity)).await?;
+    ctx.say(format!("removed {name} x{quantity}")).await?;
     Ok(())
 }

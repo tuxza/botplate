@@ -14,11 +14,11 @@ pub async fn db_create_channel(
     user_id: UserId,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    crate::global::ensure_user_exists(user_id.get() as i64, database).await?;
+    crate::global::ensure_user_exists(user_id.get(), database).await?;
 
     let active_model = ChannelsActiveModel {
-        cid: Set(new_channel_id.get() as i64),
-        uid: Set(user_id.get() as i64),
+        cid: Set(new_channel_id.get().cast_signed()),
+        uid: Set(user_id.get().cast_signed()),
         in_stock_market: Set(false),
     };
 
@@ -35,30 +35,39 @@ pub async fn db_create_channel(
 }
 
 pub async fn db_get_shop_channel_id(
-    user_id: UserId,
+    uid: u64,
     database: &DatabaseConnection,
 ) -> Result<Option<ChannelId>, DbErr> {
     let channel = Channels::find()
-        .filter(ChannelsColumn::Uid.eq(user_id.get() as i64))
+        .filter(ChannelsColumn::Uid.eq(uid))
         .one(database)
         .await?;
-    Ok(channel.map(|c| ChannelId::new(c.cid as u64)))
+    Ok(channel.map(|c| ChannelId::new(c.cid.cast_unsigned())))
 }
 
-pub async fn db_delete_shop(user_id: UserId, database: &DatabaseConnection) -> Result<(), DbErr> {
+pub async fn db_get_shop_owner_id(
+    cid: u64,
+    database: &DatabaseConnection,
+) -> Result<Option<UserId>, DbErr> {
+    let channel = Channels::find()
+        .filter(ChannelsColumn::Cid.eq(cid))
+        .one(database)
+        .await?;
+
+    Ok(channel.map(|c| UserId::new(c.uid.cast_unsigned())))
+}
+
+pub async fn db_delete_shop(uid: UserId, database: &DatabaseConnection) -> Result<(), DbErr> {
     Channels::delete_many()
-        .filter(ChannelsColumn::Uid.eq(user_id.get() as i64))
+        .filter(ChannelsColumn::Uid.eq(uid.get()))
         .exec(database)
         .await?;
     Ok(())
 }
 
-pub async fn db_user_has_shop(
-    user_id: UserId,
-    database: &DatabaseConnection,
-) -> Result<bool, DbErr> {
+pub async fn db_user_has_shop(uid: UserId, database: &DatabaseConnection) -> Result<bool, DbErr> {
     let existing = Channels::find()
-        .filter(ChannelsColumn::Uid.eq(user_id.get() as i64))
+        .filter(ChannelsColumn::Uid.eq(uid.get()))
         .one(database)
         .await?;
 
@@ -70,7 +79,7 @@ pub async fn db_delete_channel_by_cid(
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
     Channels::delete_many()
-        .filter(ChannelsColumn::Cid.eq(channel_id.get() as i64))
+        .filter(ChannelsColumn::Cid.eq(channel_id.get()))
         .exec(database)
         .await?;
     Ok(())
@@ -87,7 +96,7 @@ pub async fn db_verify_shop_owner(
         .await?;
 
     Ok(match channel {
-        Some(c) => c.uid == uid,
+        Some(c) => c.uid == uid.cast_signed(),
         None => false,
     })
 }

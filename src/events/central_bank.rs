@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // /src/events/central_bank.rs
+#![allow(clippy::unreadable_literal)]
 use crate::entities;
 use crate::global::make_numbers_pretty;
 use poise::serenity_prelude as serenity;
@@ -18,8 +19,8 @@ async fn get_money_get_bread(database: &DatabaseConnection) -> String {
         .one(database)
         .await
         .unwrap_or_default();
-    let balance = central_bank.map(|bank| bank.balance).unwrap_or(0);
-    make_numbers_pretty(balance as u64).await
+    let balance = central_bank.map_or(0, |bank| bank.balance);
+    make_numbers_pretty(balance).await
 }
 
 /// Deletes every message in the channel, bulk-deleting where possible
@@ -73,7 +74,7 @@ pub async fn send_bank_embed(
     let central_bank = get_money_get_bread(database).await;
     let embed = CreateEmbed::new()
         .title("central bank")
-        .description(format!("tuxbux reserves: {}", central_bank))
+        .description(format!("tuxbux reserves: {central_bank}"))
         .color(0xFFD700)
         .field(
             "what made the amount in the central bank?".to_string(),
@@ -91,7 +92,7 @@ pub async fn send_bank_embed(
             true,
         )
         .footer(
-            poise::serenity_prelude::CreateEmbedFooter::new("botplate-rs | botplate reimagined | v0.1.0")
+            poise::serenity_prelude::CreateEmbedFooter::new(format!("botplate-rs | botplate reimagined | {}", env!("CARGO_PKG_VERSION"))),
         );
     channel_id
         .send_message(http, CreateMessage::new().embed(embed))

@@ -9,7 +9,7 @@ use std::fmt;
 #[derive(Debug)]
 pub enum Error {
     Database(sea_orm::DbErr),
-    Discord(poise::serenity_prelude::Error),
+    Discord(Box<poise::serenity_prelude::Error>),
     Custom(std::string::String),
 }
 
@@ -39,12 +39,24 @@ impl From<sea_orm::DbErr> for Error {
 
 impl From<poise::serenity_prelude::Error> for Error {
     fn from(e: poise::serenity_prelude::Error) -> Self {
-        Error::Discord(e)
+        Error::Discord(Box::new(e))
     }
 }
 
 impl From<std::string::String> for Error {
     fn from(e: std::string::String) -> Self {
         Error::Custom(e)
+    }
+}
+
+impl From<std::env::VarError> for Error {
+    fn from(e: std::env::VarError) -> Self {
+        Error::Custom(e.to_string())
+    }
+}
+
+impl From<std::num::ParseIntError> for Error {
+    fn from(e: std::num::ParseIntError) -> Self {
+        Error::Custom(e.to_string())
     }
 }
