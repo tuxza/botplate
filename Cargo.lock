@@ -194,7 +194,7 @@ dependencies = [
 
 [[package]]
 name = "botplate"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "chrono",
  "dashmap 6.2.1",

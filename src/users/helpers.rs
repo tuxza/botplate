@@ -108,7 +108,8 @@ pub async fn get_balance(uid: u64, database: &DatabaseConnection) -> i64 {
         .await
         .ok()
         .flatten()
-        .map_or(0, |u| u.tokens.abs())
+        .map(|u| u.tokens)
+        .unwrap_or(0)
 }
 
 /// Adjusts a user's token balance atomically.

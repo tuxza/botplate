@@ -5,8 +5,7 @@
 // /src/shops/buy/items.rs
 
 use crate::shops::buy::db::db_remove_item;
-use crate::shops::db::db_get_shop_owner_id;
-use crate::shops::db::db_verify_shop;
+use crate::shops::db::db_verify_shop_exists;
 use crate::users::inventory::db::db_add_inv_item;
 
 use crate::{errors::Error, shops::buy::db::db_get_item};
@@ -20,7 +19,7 @@ pub async fn buy(
     let uid = ctx.author().id.get();
     let cid = ctx.channel_id().get();
 
-    if !db_verify_shop(uid, cid, &ctx.data().database).await? {
+    if !db_verify_shop_exists(cid, &ctx.data().database).await? {
         ctx.say("this isn't a shop!").await?;
         return Ok(());
     }
