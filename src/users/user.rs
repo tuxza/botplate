@@ -4,15 +4,23 @@
 
 // src/users/user.rs
 
+use poise::serenity_prelude::UserId;
+
 use crate::errors::Error;
 use crate::users::helpers;
 
 /// check your balance
 #[poise::command(prefix_command, slash_command)]
-pub async fn balance(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
-    let author = ctx.author();
-    let balance = helpers::get_balance(author.id.get().cast_signed(), &ctx.data().database).await;
-    let _ = ctx.say(format!("Your balance is: {balance}")).await?;
+pub async fn balance(
+    ctx: poise::Context<'_, crate::Data, Error>,
+    #[description = "user id to check"] user: Option<UserId>,
+) -> Result<(), Error> {
+    let uid = ctx.author().id.get();
+    let user_id = user.unwrap_or(uid.into());
+    let balance = helpers::get_balance(user_id.get().cast_signed(), &ctx.data().database).await;
+    let _ = ctx
+        .say(format!("<@{user_id}> balance is: {balance}"))
+        .await?;
     Ok(())
 }
 
@@ -80,6 +88,7 @@ pub async fn gamble(
     }
     let won = rand::random::<bool>();
     if won {
+        let amount = amount * 2;
         helpers::edit_balance(author.id.get().cast_signed(), amount, &ctx.data().database).await?;
         ctx.say(format!("you won! +{amount} tuxbux")).await?;
     } else {

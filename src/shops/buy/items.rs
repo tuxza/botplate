@@ -10,6 +10,7 @@ use crate::users::inventory::db::db_add_inv_item;
 
 use crate::{errors::Error, shops::buy::db::db_get_item, shops::db::db_get_shop_owner_id};
 
+/// Buy an item from a shop.
 #[poise::command(slash_command, prefix_command)]
 pub async fn buy(
     ctx: poise::Context<'_, crate::Data, Error>,
@@ -32,7 +33,14 @@ pub async fn buy(
     };
 
     let item_id = found_item.id;
+    let item_quantity = found_item.quantity;
     let acquired_price = found_item.price * quantity;
+
+    if item_quantity < quantity {
+        ctx.say(format!("Not enough stock of `{}`.", found_item.name))
+            .await?;
+        return Ok(());
+    }
 
     let amount = -acquired_price;
     let database = &ctx.data().database;
@@ -41,29 +49,19 @@ pub async fn buy(
 
     db_add_inv_item(uid, item_id, quantity, acquired_price, &ctx.data().database).await?;
 
-    let owner_id = db_get_shop_owner_id(cid, &ctx.data().database).await?;
-
-    let Some(owner) = owner_id else {
+    let owner = db_get_shop_owner_id(cid, &ctx.data().database).await?;
+    let Some(owner) = owner else {
         return Err(Error::Custom(
             "Internal error. Could not find shop owner.".to_string(),
         ));
-    }; // this check might not be neccessary, but nonetheless
-    // shadow user_id and amount for the shop owner now!!
-    let uid = owner.get();
+    };
+
+    let uid = owner.get(); // shadow shadow shadow!!!
     let amount = acquired_price;
 
     crate::users::helpers::edit_balance(uid.cast_signed(), amount, database).await?;
 
-    // couldnt think of a name, sorry
-    // maybe ill make this standard across the codebase...
-    // if i do this more than once LOL
-    let perchance = db_remove_item(cid, &found_item.name, quantity, &ctx.data().database).await?;
-
-    if !perchance {
-        ctx.say(format!("Not enough stock of `{}`.", found_item.name))
-            .await?;
-        return Ok(());
-    }
+    db_remove_item(cid, &found_item.name, quantity, &ctx.data().database).await?;
 
     ctx.say(format!(
         "Successfully bought {}x {}!",
