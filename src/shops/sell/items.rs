@@ -9,6 +9,7 @@ use crate::shops::buy::db::db_remove_item;
 use crate::shops::db::db_verify_shop_owner;
 use crate::shops::sell::db;
 
+/// List an item for sale in your shop.
 #[poise::command(slash_command, prefix_command)]
 pub async fn sell(
     ctx: poise::Context<'_, crate::Data, Error>,

@@ -88,6 +88,7 @@ pub async fn gamble(
     }
     let won = rand::random::<bool>();
     if won {
+        let amount = amount * 2;
         helpers::edit_balance(author.id.get().cast_signed(), amount, &ctx.data().database).await?;
         ctx.say(format!("you won! +{amount} tuxbux")).await?;
     } else {
