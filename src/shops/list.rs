@@ -4,9 +4,9 @@ use poise::serenity_prelude::CreateEmbed;
 
 #[poise::command(prefix_command, slash_command)]
 pub async fn list(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
-    let channel_id = ctx.channel_id();
+    let cid = ctx.channel_id();
 
-    let items = db_list_items(channel_id, &ctx.data().database).await?;
+    let items = db_list_items(cid.get().cast_signed(), &ctx.data().database).await?;
 
     let mut embed = CreateEmbed::new()
         .title("listed items")

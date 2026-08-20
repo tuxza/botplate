@@ -5,20 +5,20 @@
 // src/channels/db.rs
 use crate::entities::prelude::Channels;
 use crate::entities::types::{ChannelsActiveModel, ChannelsColumn};
-use poise::serenity_prelude::{ChannelId, UserId};
+use poise::serenity_prelude::ChannelId;
 use sea_orm::sea_query::OnConflict;
 use sea_orm::{ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 
 pub async fn db_create_channel(
-    new_channel_id: ChannelId,
-    user_id: UserId,
+    new_cid: i64,
+    uid: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    crate::global::ensure_user_exists(user_id.get().cast_signed(), database).await?;
+    crate::global::ensure_user_exists(uid, database).await?;
 
     let active_model = ChannelsActiveModel {
-        cid: Set(new_channel_id.get().cast_signed()),
-        uid: Set(user_id.get().cast_signed()),
+        cid: Set(new_cid),
+        uid: Set(uid),
         in_stock_market: Set(false),
     };
 
@@ -35,7 +35,7 @@ pub async fn db_create_channel(
 }
 
 pub async fn db_get_shop_channel_id(
-    uid: u64,
+    uid: i64,
     database: &DatabaseConnection,
 ) -> Result<Option<ChannelId>, DbErr> {
     let channel = Channels::find()
@@ -48,26 +48,26 @@ pub async fn db_get_shop_channel_id(
 pub async fn db_get_shop_owner_id(
     cid: i64,
     database: &DatabaseConnection,
-) -> Result<Option<UserId>, DbErr> {
+) -> Result<Option<i64>, DbErr> {
     let channel = Channels::find()
         .filter(ChannelsColumn::Cid.eq(cid))
         .one(database)
         .await?;
 
-    Ok(channel.map(|c| UserId::new(c.uid.cast_unsigned())))
+    Ok(channel.map(|c| c.uid))
 }
 
-pub async fn db_delete_shop(uid: UserId, database: &DatabaseConnection) -> Result<(), DbErr> {
+pub async fn db_delete_shop(uid: i64, database: &DatabaseConnection) -> Result<(), DbErr> {
     Channels::delete_many()
-        .filter(ChannelsColumn::Uid.eq(uid.get()))
+        .filter(ChannelsColumn::Uid.eq(uid))
         .exec(database)
         .await?;
     Ok(())
 }
 
-pub async fn db_user_has_shop(uid: UserId, database: &DatabaseConnection) -> Result<bool, DbErr> {
+pub async fn db_user_has_shop(uid: i64, database: &DatabaseConnection) -> Result<bool, DbErr> {
     let existing = Channels::find()
-        .filter(ChannelsColumn::Uid.eq(uid.get()))
+        .filter(ChannelsColumn::Uid.eq(uid))
         .one(database)
         .await?;
 
@@ -75,11 +75,11 @@ pub async fn db_user_has_shop(uid: UserId, database: &DatabaseConnection) -> Res
 }
 
 pub async fn db_delete_channel_by_cid(
-    channel_id: ChannelId,
+    cid: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
     Channels::delete_many()
-        .filter(ChannelsColumn::Cid.eq(channel_id.get()))
+        .filter(ChannelsColumn::Cid.eq(cid))
         .exec(database)
         .await?;
     Ok(())

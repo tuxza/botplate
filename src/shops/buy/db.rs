@@ -8,19 +8,15 @@ use crate::entities::items::Model;
 
 use crate::entities::prelude::Items;
 use crate::entities::types::ItemsColumn;
-use poise::serenity_prelude::ChannelId;
 use sea_orm::sea_query::Expr;
 use sea_orm::{ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 
 /// List all the items available in a shop.
 ///
 /// Returns a vector of [`Model`] items.
-pub async fn db_list_items(
-    channel_id: ChannelId,
-    database: &DatabaseConnection,
-) -> Result<Vec<Model>, DbErr> {
+pub async fn db_list_items(cid: i64, database: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
     let items = Items::find()
-        .filter(ItemsColumn::OriginCid.eq(channel_id.get()))
+        .filter(ItemsColumn::OriginCid.eq(cid))
         .all(database)
         .await?;
     Ok(items)

@@ -36,7 +36,7 @@ pub async fn on_channel_delete(
     db: &DatabaseConnection,
     channel_id: serenity::ChannelId,
 ) -> Result<(), Error> {
-    crate::shops::db::db_delete_channel_by_cid(channel_id, db).await?;
+    crate::shops::db::db_delete_channel_by_cid(channel_id.get().cast_signed(), db).await?;
     Ok(())
 }
 

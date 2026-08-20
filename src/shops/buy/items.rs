@@ -56,10 +56,10 @@ pub async fn buy(
         ));
     };
 
-    let uid = owner.get(); // shadow shadow shadow!!!
+    let uid = owner; // shadow shadow shadow!!!
     let amount = acquired_price;
 
-    crate::users::helpers::edit_balance(uid.cast_signed(), amount, database).await?;
+    crate::users::helpers::edit_balance(uid, amount, database).await?;
 
     db_remove_item(cid, &found_item.name, quantity, &ctx.data().database).await?;
 

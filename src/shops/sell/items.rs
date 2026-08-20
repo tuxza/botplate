@@ -50,6 +50,7 @@ pub async fn sell(
     Ok(())
 }
 
+/// remove an item from your shop
 #[poise::command(slash_command, prefix_command)]
 pub async fn remove(
     ctx: poise::Context<'_, crate::Data, Error>,

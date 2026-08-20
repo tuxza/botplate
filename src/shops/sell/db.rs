@@ -9,6 +9,22 @@ use sea_orm::{ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTr
 use crate::entities::prelude::Items;
 use crate::entities::types::{ItemsActiveModel, ItemsColumn};
 
+/// Adds an item to the database.
+///
+/// # Arguments
+///
+/// * `cid` - The ID of the user who is selling the item.
+/// * `name` - The name of the item.
+/// * `description` - The description of the item.
+/// * `item_type` - The type of the item.
+/// * `price` - The price of the item.
+/// * `quantity` - The quantity of the item.
+/// * `database` - The database connection.
+///
+/// # Returns
+///
+/// * `Ok(())` - success
+/// * `Err(DbErr)` - An error occurred while adding the item.
 pub async fn add_item(
     cid: u64,
     name: String,
