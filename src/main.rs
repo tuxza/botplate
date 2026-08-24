@@ -7,16 +7,16 @@
 #![allow(clippy::unreadable_literal)]
 #![allow(clippy::print_stdout)]
 use poise::serenity_prelude as serenity;
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use std::time::Instant;
 
 use dashmap::DashMap;
 
 pub struct Data {
-    pub start_time: Instant,
     pub database: DatabaseConnection,
-    pub admins: u64,
     pub xp_map: DashMap<u64, (i64, i64)>,
+    pub admins: Vec<u64>,
+    pub start_time: Instant,
 }
 
 mod admin;
@@ -37,14 +37,24 @@ async fn main() -> Result<(), errors::Error> {
     let database_url = std::env::var("DATABASE_URL")
         .map_err(|_| errors::Error::Custom("DATABASE_URL not set in env".into()))?;
 
-    let db = Database::connect(database_url).await?;
+    let mut opt = ConnectOptions::new(database_url);
+    opt.max_connections(5)
+        .min_connections(1)
+        .connect_timeout(std::time::Duration::from_secs(8))
+        .sqlx_logging(false);
 
-    let admins =
-        std::env::var("ADMIN").map_err(|_| errors::Error::Custom("ADMIN not set in env".into()))?;
+    let db = Database::connect(opt).await?;
 
-    let admins: i64 = admins
-        .parse()
-        .map_err(|_| errors::Error::Custom("ADMIN is not a valid integer".into()))?;
+    let admins = std::env::var("ADMINS")
+        .map_err(|_| errors::Error::Custom("ADMINS not set in env".into()))?;
+
+    let admins: Vec<u64> = admins
+        .split(',')
+        .map(|s| {
+            s.parse()
+                .map_err(|_| errors::Error::Custom("ADMIN is not a valid integer".into()))
+        })
+        .collect::<Result<Vec<u64>, _>>()?;
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -80,10 +90,10 @@ async fn main() -> Result<(), errors::Error> {
                 let target_channel = serenity::ChannelId::new(1401390175770382366);
                 events::central_bank::send_bank_embed(&ctx.http, target_channel, &db).await?;
                 Ok(Data {
-                    start_time: start,
                     database: db,
-                    admins: admins.cast_unsigned(), // we'll do something more elegant later.
                     xp_map: DashMap::new(),
+                    admins: admins,
+                    start_time: start,
                 })
             })
         })

@@ -38,8 +38,8 @@ pub async fn ensure_user_exists(uid: i64, database: &DatabaseConnection) -> Resu
 
 // this could be a lot more elegant and nice to work with, but.. im a lazy ass.
 
-pub fn is_admin(author: u64, admins: u64) -> bool {
-    author == admins
+pub fn is_admin(author: u64, admins: &Vec<u64>) -> bool {
+    admins.contains(&author)
 }
 
 pub async fn make_numbers_pretty(num: i64) -> String {
