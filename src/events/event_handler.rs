@@ -25,7 +25,7 @@ pub async fn event_handler(
             on_channel_delete(&data.database, channel.id).await?;
         }
         serenity::FullEvent::Message { new_message } => {
-            on_message(new_message, ctx, &data.xp_map, &data.database, 100).await?;
+            on_message(new_message, ctx, &data.user_map, &data.database, 100).await?;
         }
         _ => {}
     }

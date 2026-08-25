@@ -14,9 +14,9 @@ use sea_orm::{ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 /// List all the items available in a shop.
 ///
 /// Returns a vector of [`Model`] items.
-pub async fn db_list_items(cid: i64, database: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
+pub async fn db_list_items(cid: u64, database: &DatabaseConnection) -> Result<Vec<Model>, DbErr> {
     let items = Items::find()
-        .filter(ItemsColumn::OriginCid.eq(cid))
+        .filter(ItemsColumn::OriginCid.eq(cid.cast_signed()))
         .all(database)
         .await?;
     Ok(items)
@@ -26,25 +26,13 @@ pub async fn db_list_items(cid: i64, database: &DatabaseConnection) -> Result<Ve
 ///
 /// Returns an [`Option`] of [`Model`] if the item is found.
 pub async fn db_get_item(
+    cid: u64,
     item: &str,
     database: &DatabaseConnection,
 ) -> Result<Option<Model>, DbErr> {
     let item = Items::find()
         .filter(ItemsColumn::Name.eq(item))
-        .one(database)
-        .await?;
-    Ok(item)
-}
-
-/// Get an item by its ID.
-///
-/// Returns an [`Option`] of [`Model`] if the item is found.
-pub async fn _db_get_item_by_id(
-    item_id: i64,
-    database: &DatabaseConnection,
-) -> Result<Option<Model>, DbErr> {
-    let item = Items::find()
-        .filter(ItemsColumn::Id.eq(item_id))
+        .filter(ItemsColumn::OriginCid.eq(cid.cast_signed()))
         .one(database)
         .await?;
     Ok(item)
@@ -54,7 +42,7 @@ pub async fn _db_get_item_by_id(
 ///
 /// Returns `true` if the item was removed, `false` otherwise.
 pub async fn db_remove_item(
-    cid: i64,
+    cid: u64,
     name: &str,
     quantity: i64,
     database: &DatabaseConnection,
@@ -65,7 +53,7 @@ pub async fn db_remove_item(
             Expr::col(ItemsColumn::Quantity).sub(quantity),
         )
         .filter(ItemsColumn::Name.eq(name))
-        .filter(ItemsColumn::OriginCid.eq(cid))
+        .filter(ItemsColumn::OriginCid.eq(cid.cast_signed()))
         .filter(ItemsColumn::Quantity.gte(quantity))
         .exec(database)
         .await?;

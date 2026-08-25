@@ -46,11 +46,11 @@ pub async fn db_get_shop_channel_id(
 }
 
 pub async fn db_get_shop_owner_id(
-    cid: i64,
+    cid: u64,
     database: &DatabaseConnection,
 ) -> Result<Option<i64>, DbErr> {
     let channel = Channels::find()
-        .filter(ChannelsColumn::Cid.eq(cid))
+        .filter(ChannelsColumn::Cid.eq(cid.cast_signed()))
         .one(database)
         .await?;
 
@@ -86,24 +86,24 @@ pub async fn db_delete_channel_by_cid(
 }
 
 pub async fn db_verify_shop_owner(
-    uid: i64,
-    cid: i64,
+    uid: u64,
+    cid: u64,
     database: &DatabaseConnection,
 ) -> Result<bool, DbErr> {
     let channel = Channels::find()
-        .filter(ChannelsColumn::Cid.eq(cid))
+        .filter(ChannelsColumn::Cid.eq(cid.cast_signed()))
         .one(database)
         .await?;
 
     Ok(match channel {
-        Some(c) => c.uid == uid,
+        Some(c) => c.uid == uid.cast_signed(),
         None => false,
     })
 }
 
-pub async fn db_verify_shop_exists(cid: i64, database: &DatabaseConnection) -> Result<bool, DbErr> {
+pub async fn db_verify_shop_exists(cid: u64, database: &DatabaseConnection) -> Result<bool, DbErr> {
     let channel = Channels::find()
-        .filter(ChannelsColumn::Cid.eq(cid))
+        .filter(ChannelsColumn::Cid.eq(cid.cast_signed()))
         .one(database)
         .await?;
 

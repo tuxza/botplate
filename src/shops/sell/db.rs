@@ -35,7 +35,7 @@ pub async fn add_item(
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
     let existing = Items::find()
-        .filter(ItemsColumn::Name.eq(name.clone()))
+        .filter(ItemsColumn::Name.eq(&name))
         .filter(ItemsColumn::OriginCid.eq(cid))
         .one(database)
         .await?;

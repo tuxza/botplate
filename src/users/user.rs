@@ -17,7 +17,7 @@ pub async fn balance(
 ) -> Result<(), Error> {
     let uid = ctx.author().id.get();
     let user_id = user.unwrap_or(uid.into());
-    let balance = helpers::get_balance(user_id.get().cast_signed(), &ctx.data().database).await;
+    let balance = helpers::db_get_balance(user_id.get(), &ctx.data().database).await;
     let _ = ctx
         .say(format!("<@{user_id}> balance is: {balance}"))
         .await?;
@@ -28,7 +28,7 @@ pub async fn balance(
 #[poise::command(prefix_command, slash_command)]
 pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let author = ctx.author();
-    let last = helpers::last_daily(author.id.get(), &ctx.data().database).await;
+    let last = helpers::db_last_daily(author.id.get(), &ctx.data().database).await;
 
     if !helpers::can_claim_daily(last) {
         ctx.say("you already claimed your daily today! come back later please.")
@@ -36,8 +36,8 @@ pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Er
         return Ok(());
     }
 
-    helpers::edit_balance(author.id.get().cast_signed(), 100, &ctx.data().database).await?; // tux reminder: make this configurable because your so nice
-    helpers::set_last_daily(
+    helpers::db_edit_balance(author.id.get(), 100, &ctx.data().database).await?; // tux reminder: make this configurable because your so nice
+    helpers::db_set_last_daily(
         author.id.get(),
         chrono::Utc::now().timestamp(),
         &ctx.data().database,
@@ -48,11 +48,12 @@ pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Er
     Ok(())
 }
 
+/// Check your rank and XP.
 #[poise::command(prefix_command, slash_command)]
 pub async fn rank(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let author = ctx.author();
-    let (xp, level) =
-        helpers::get_user_xp_and_level(author.id.get(), &ctx.data().xp_map, &ctx.data().database)
+    let (xp, level, _) =
+        helpers::get_user_xp_and_level(author.id.get(), &ctx.data().user_map, &ctx.data().database)
             .await?;
 
     ctx.say(format!("You are level {level} with {xp} XP."))
@@ -61,7 +62,7 @@ pub async fn rank(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
     Ok(())
 }
 
-// now i THOUGHT of putting the work that gamble does into a function
+// now i THOUGHT of putting the work that gamble does into a helper function
 // but.. i kind thought it wouldnt be used again..
 // obviously get_balance is used frequently LOL
 // but how OFTEN are you gambling that you need a whole ass function for it??
@@ -73,7 +74,7 @@ pub async fn gamble(
     #[description = "how many tuxbux to gamble"] amount: i64,
 ) -> Result<(), Error> {
     let author = ctx.author();
-    let balance = helpers::get_balance(author.id.get().cast_signed(), &ctx.data().database).await;
+    let balance = helpers::db_get_balance(author.id.get(), &ctx.data().database).await;
     if amount <= 0 {
         ctx.say("you gotta gamble a positive amount, dummy.")
             .await?;
@@ -89,10 +90,10 @@ pub async fn gamble(
     let won = rand::random::<bool>();
     if won {
         let amount = amount * 2;
-        helpers::edit_balance(author.id.get().cast_signed(), amount, &ctx.data().database).await?;
+        helpers::db_edit_balance(author.id.get(), amount, &ctx.data().database).await?;
         ctx.say(format!("you won! +{amount} tuxbux")).await?;
     } else {
-        helpers::edit_balance(author.id.get().cast_signed(), -amount, &ctx.data().database).await?;
+        helpers::db_edit_balance(author.id.get(), -amount, &ctx.data().database).await?;
         ctx.say(format!("you lost! -{amount} tuxaroos")).await?;
     }
     Ok(())

@@ -14,7 +14,7 @@ use dashmap::DashMap;
 
 pub struct Data {
     pub database: DatabaseConnection,
-    pub xp_map: DashMap<u64, (i64, i64)>,
+    pub user_map: DashMap<u64, (i64, i64, i64)>,
     pub admins: Vec<u64>,
     pub start_time: Instant,
 }
@@ -91,7 +91,7 @@ async fn main() -> Result<(), errors::Error> {
                 events::central_bank::send_bank_embed(&ctx.http, target_channel, &db).await?;
                 Ok(Data {
                     database: db,
-                    xp_map: DashMap::new(),
+                    user_map: DashMap::new(),
                     admins: admins,
                     start_time: start,
                 })

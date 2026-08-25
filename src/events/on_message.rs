@@ -20,7 +20,7 @@ use crate::errors::Error;
 pub async fn on_message(
     new_message: &serenity::Message,
     ctx: &serenity::Context,
-    xp_map: &DashMap<u64, (i64, i64)>,
+    user_map: &DashMap<u64, (i64, i64, i64)>,
     database: &DatabaseConnection,
     xp_per_level: i64,
 ) -> Result<(), Error> {
@@ -33,12 +33,12 @@ pub async fn on_message(
     // if the user is not in the map, fetch their xp/level from the database. so yk..
     // we dont have to ask the DB everytime someone sends a message.
     // i (hope) this is faster than querying the database. (i hope.)
-    if !xp_map.contains_key(&uid) {
+    if !user_map.contains_key(&uid) {
         let (xp, level) = Users::find_by_id(uid.cast_signed())
             .one(database)
             .await?
             .map_or((0, 0), |u| (u.xp, u.level));
-        xp_map.insert(uid, (xp, level));
+        user_map.insert(uid, (xp, level, 0));
     }
 
     let xp_gained = rand::rng().random_range(5..=15);
@@ -47,7 +47,7 @@ pub async fn on_message(
     let new_level: i64;
 
     {
-        let mut entry = xp_map
+        let mut entry = user_map
             .get_mut(&uid)
             .ok_or(Error::Custom("something exploded".to_string()))?;
         entry.0 += xp_gained;
@@ -83,7 +83,7 @@ pub async fn on_message(
             .send_message(&ctx.http, serenity::CreateMessage::new().embed(embed))
             .await?;
 
-        crate::users::helpers::edit_balance(uid.cast_signed(), tokens_earned, database).await?;
+        crate::users::helpers::db_edit_balance(uid, tokens_earned, database).await?;
     }
 
     Ok(())

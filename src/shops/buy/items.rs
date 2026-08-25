@@ -17,15 +17,15 @@ pub async fn buy(
     #[description = "name of the item to buy"] item: String,
     #[description = "how many you want"] quantity: i64,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get().cast_signed();
-    let cid = ctx.channel_id().get().cast_signed();
+    let uid = ctx.author().id.get();
+    let cid = ctx.channel_id().get();
 
     if !db_verify_shop_exists(cid, &ctx.data().database).await? {
         ctx.say("this isn't a shop!").await?;
         return Ok(());
     }
 
-    let db_item = db_get_item(&item, &ctx.data().database).await?;
+    let db_item = db_get_item(cid, &item, &ctx.data().database).await?;
 
     let Some(found_item) = db_item else {
         ctx.say(format!("No item found matching `{item}`.")).await?;
@@ -45,7 +45,7 @@ pub async fn buy(
     let amount = -acquired_price;
     let database = &ctx.data().database;
 
-    crate::users::helpers::edit_balance(uid, amount, database).await?;
+    crate::users::helpers::db_edit_balance(uid, amount, database).await?;
 
     db_add_inv_item(uid, item_id, quantity, acquired_price, &ctx.data().database).await?;
 
@@ -56,10 +56,10 @@ pub async fn buy(
         ));
     };
 
-    let uid = owner; // shadow shadow shadow!!!
+    let uid = owner.cast_unsigned(); // shadow shadow shadow!!!
     let amount = acquired_price;
 
-    crate::users::helpers::edit_balance(uid, amount, database).await?;
+    crate::users::helpers::db_edit_balance(uid, amount, database).await?;
 
     db_remove_item(cid, &found_item.name, quantity, &ctx.data().database).await?;
 

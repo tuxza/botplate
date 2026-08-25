@@ -18,10 +18,10 @@ pub async fn sell(
     #[description = "how many to list"] quantity: i64,
     #[description = "description"] description: Option<String>,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get().cast_signed();
+    let uid = ctx.author().id.get();
     let cid = ctx.channel_id().get();
 
-    if !db_verify_shop_owner(uid, cid.cast_signed(), &ctx.data().database).await? {
+    if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;
         return Ok(());
     }
@@ -32,9 +32,11 @@ pub async fn sell(
         return Ok(());
     }
 
+    let msg = format!("listed **{name}** x{quantity} for {price} tuxbux each");
+
     db::add_item(
         cid,
-        name.clone(),
+        name,
         description.unwrap_or_default(),
         "product".to_string(),
         price,
@@ -43,10 +45,7 @@ pub async fn sell(
     )
     .await?;
 
-    ctx.say(format!(
-        "listed **{name}** x{quantity} for {price} tuxbux each"
-    ))
-    .await?;
+    ctx.say(msg).await?;
     Ok(())
 }
 
@@ -57,8 +56,8 @@ pub async fn remove(
     #[description = "item name"] name: String,
     #[description = "quantity"] quantity: i64,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get().cast_signed();
-    let cid = ctx.channel_id().get().cast_signed();
+    let uid = ctx.author().id.get();
+    let cid = ctx.channel_id().get();
 
     if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;

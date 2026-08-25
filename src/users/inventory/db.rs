@@ -4,15 +4,20 @@ use crate::entities::prelude::Inventory;
 use crate::entities::types::InventoryActiveModel;
 
 // FUCK THE GITHUB ISSUE I JUST REALIZED ITS THE 29TH
+// i forgot the context of this
+// ...
+// oops.
 
 pub async fn db_add_inv_item(
-    uid: i64,
+    uid: u64,
     item_id: i64,
     quantity: i64,
     acquired_price: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    let existing = Inventory::find_by_id((uid, item_id)).one(database).await?;
+    let existing = Inventory::find_by_id((uid.cast_signed(), item_id))
+        .one(database)
+        .await?;
 
     if let Some(model) = existing {
         let mut active_model: InventoryActiveModel = model.clone().into();
@@ -20,7 +25,7 @@ pub async fn db_add_inv_item(
         Inventory::update(active_model).exec(database).await?;
     } else {
         let active_model = InventoryActiveModel {
-            uid: Set(uid),
+            uid: Set(uid.cast_signed()),
             item_id: Set(item_id),
             quantity: Set(quantity),
             acquired_price: Set(acquired_price),
@@ -33,7 +38,7 @@ pub async fn db_add_inv_item(
 }
 
 pub async fn db_get_inventory(
-    uid: i64,
+    uid: u64,
     database: &DatabaseConnection,
 ) -> Result<Vec<(String, i64)>, DbErr> {
     use crate::entities::prelude::{Inventory, Items};
@@ -41,7 +46,7 @@ pub async fn db_get_inventory(
     use sea_orm::{ColumnTrait, QueryFilter};
 
     let entries = Inventory::find()
-        .filter(InventoryColumn::Uid.eq(uid))
+        .filter(InventoryColumn::Uid.eq(uid.cast_signed()))
         .find_also_related(Items)
         .all(database)
         .await?;

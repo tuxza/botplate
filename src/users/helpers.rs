@@ -29,12 +29,12 @@ use sea_orm::{
 /// # Examples
 ///
 /// ```rust
-/// let timestamp = last_daily(123456789012345678, &db).await;
+/// let timestamp = db_last_daily(123456789012345678, &db).await;
 /// if let Some(ts) = timestamp {
 ///     println!("Last claimed at: {ts}");
 /// }
 /// ```
-pub async fn last_daily(uid: u64, database: &DatabaseConnection) -> Option<i64> {
+pub async fn db_last_daily(uid: u64, database: &DatabaseConnection) -> Option<i64> {
     Users::find_by_id(uid.cast_signed())
         .one(database)
         .await
@@ -75,7 +75,7 @@ pub fn can_claim_daily(last_daily: Option<i64>) -> bool {
 /// # Returns
 ///
 /// * it returns nothing, lol.. i should fix that.
-pub async fn set_last_daily(uid: u64, timestamp: i64, database: &DatabaseConnection) {
+pub async fn db_set_last_daily(uid: u64, timestamp: i64, database: &DatabaseConnection) {
     let active_model = UsersActiveModel {
         id: Set(uid.cast_signed()),
         last_daily: Set(Some(timestamp)),
@@ -102,8 +102,8 @@ pub async fn set_last_daily(uid: u64, timestamp: i64, database: &DatabaseConnect
 /// # Returns
 ///
 /// The user's balance as an `i64` value.
-pub async fn get_balance(uid: i64, database: &DatabaseConnection) -> i64 {
-    Users::find_by_id(uid)
+pub async fn db_get_balance(uid: u64, database: &DatabaseConnection) -> i64 {
+    Users::find_by_id(uid.cast_signed())
         .one(database)
         .await
         .ok()
@@ -127,17 +127,17 @@ pub async fn get_balance(uid: i64, database: &DatabaseConnection) -> i64 {
 ///
 /// ```ignore
 /// // Add 500 tokens
-/// edit_balance(123456789, 500, &db).await;
+/// db_edit_balance(123456789, 500, &db).await;
 ///
 /// // Deduct 150 tokens
-/// edit_balance(123456789, -150, &db).await;
+/// db_edit_balance(123456789, -150, &db).await;
 /// ```
-pub async fn edit_balance(
-    uid: i64,
+pub async fn db_edit_balance(
+    uid: u64,
     amount: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    ensure_user_exists(uid, database).await?;
+    ensure_user_exists(uid.cast_signed(), database).await?;
 
     Users::update_many()
         .col_expr(
@@ -161,17 +161,17 @@ pub async fn edit_balance(
 /// Returns `(0, 0)` if the user does not exist in either the cache or DB.
 pub async fn get_user_xp_and_level(
     uid: u64,
-    xp_map: &DashMap<u64, (i64, i64)>,
+    user_map: &DashMap<u64, (i64, i64, i64)>,
     database: &DatabaseConnection,
-) -> Result<(i64, i64), DbErr> {
-    if let Some(entry) = xp_map.get(&uid) {
+) -> Result<(i64, i64, i64), DbErr> {
+    if let Some(entry) = user_map.get(&uid) {
         return Ok(*entry);
     }
 
     let user = Users::find_by_id(uid.cast_signed()).one(database).await?;
-    let rank = user.map_or((0, 0), |u| (u.xp, u.level));
+    let rank = user.map_or((0, 0, 0), |u| (u.xp, u.level, u.tokens));
 
-    xp_map.insert(uid, rank);
+    user_map.insert(uid, rank);
 
     Ok(rank)
 }
