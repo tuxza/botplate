@@ -4,9 +4,11 @@
 
 // src/users/user.rs
 
-use poise::serenity_prelude::UserId;
+use poise::CreateReply;
+use poise::serenity_prelude::{CreateEmbed, Mentionable, UserId};
 
 use crate::errors::Error;
+use crate::global::{make_numbers_pretty, random_footer};
 use crate::users::helpers;
 
 /// check your balance
@@ -15,12 +17,22 @@ pub async fn balance(
     ctx: poise::Context<'_, crate::Data, Error>,
     #[description = "user id to check"] user: Option<UserId>,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get();
-    let user_id = user.unwrap_or(uid.into());
-    let balance = helpers::db_get_balance(user_id.get(), &ctx.data().database).await;
-    let _ = ctx
-        .say(format!("<@{user_id}> balance is: {balance}"))
-        .await?;
+    let uid = user.unwrap_or(ctx.author().id);
+
+    let user = uid.to_user(ctx).await?;
+
+    let display_name = user.global_name.as_deref().unwrap_or(&user.name);
+
+    let balance = helpers::db_get_balance(uid.get(), &ctx.data().database).await;
+    let balance = make_numbers_pretty(balance);
+    let embed = CreateEmbed::new()
+        .title(format!("Balance of {display_name}"))
+        .description(format!("{} has {balance} tuxbux.", uid.mention()))
+        .color(0x7289DA)
+        .footer(random_footer());
+
+    ctx.send(CreateReply::default().embed(embed)).await?;
+
     Ok(())
 }
 
@@ -50,14 +62,27 @@ pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Er
 
 /// Check your rank and XP.
 #[poise::command(prefix_command, slash_command)]
-pub async fn rank(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
-    let author = ctx.author();
+pub async fn rank(
+    ctx: poise::Context<'_, crate::Data, Error>,
+    #[description = "User to look at"] user_id: Option<UserId>,
+) -> Result<(), Error> {
+    let uid = user_id.unwrap_or(ctx.author().id);
+
+    let user = uid.to_user(ctx).await?;
+
+    let display_name = user.global_name.as_deref().unwrap_or(&user.name);
+
     let (xp, level, _) =
-        helpers::get_user_xp_and_level(author.id.get(), &ctx.data().user_map, &ctx.data().database)
+        helpers::get_user_xp_and_level(uid.get(), &ctx.data().user_map, &ctx.data().database)
             .await?;
 
-    ctx.say(format!("You are level {level} with {xp} XP."))
-        .await?;
+    let embed = CreateEmbed::new()
+        .title(format!("Rank for {display_name}"))
+        .description(format!("{} is Level {level} with {xp} XP.", uid.mention()))
+        .color(0x7289DA)
+        .footer(random_footer());
+
+    ctx.send(CreateReply::default().embed(embed)).await?;
 
     Ok(())
 }

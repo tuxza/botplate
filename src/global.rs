@@ -4,11 +4,10 @@
 
 // src/global.rs
 
-use poise::serenity_prelude::CreateEmbedFooter;
-use rand::prelude::IndexedRandom;
-
 use crate::entities::prelude::Users;
 use crate::entities::types::{UsersActiveModel, UsersColumn};
+use poise::serenity_prelude::CreateEmbedFooter;
+use rand::RngExt;
 use sea_orm::sea_query::OnConflict;
 use sea_orm::{ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait};
 
@@ -42,7 +41,7 @@ pub fn is_admin(author: u64, admins: &Vec<u64>) -> bool {
     admins.contains(&author)
 }
 
-pub async fn make_numbers_pretty(num: i64) -> String {
+pub fn make_numbers_pretty(num: i64) -> String {
     let s = num.to_string();
     let mut result = String::new();
 
@@ -56,7 +55,7 @@ pub async fn make_numbers_pretty(num: i64) -> String {
     result.chars().rev().collect()
 }
 
-pub async fn random_footer() -> CreateEmbedFooter {
+pub fn random_footer() -> CreateEmbedFooter {
     let mut rng = rand::rng();
     let version = env!("CARGO_PKG_VERSION");
     let messages = [
@@ -74,8 +73,6 @@ pub async fn random_footer() -> CreateEmbedFooter {
         "tuxzilla vs making a good bot",
         "mold -run cargo build --release",
     ];
-    let Some(message) = messages.choose(&mut rng) else {
-        return CreateEmbedFooter::new(format!("botplate-rs reimagined | {version}"));
-    };
+    let message = messages[rng.random_range(0..messages.len())];
     CreateEmbedFooter::new(format!("{message} | botplate-rs reimagined | {version}"))
 }

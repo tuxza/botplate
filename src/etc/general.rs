@@ -91,11 +91,10 @@ pub async fn info(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
             ),
             false,
         )
-        .footer(global::random_footer().await)
+        .footer(global::random_footer())
         .color(0x7289DA);
 
-    let reply = poise::CreateReply::default().embed(info_embed);
-
-    ctx.send(reply).await?;
+    ctx.send(poise::CreateReply::default().embed(info_embed))
+        .await?;
     Ok(())
 }

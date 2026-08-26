@@ -20,7 +20,7 @@ async fn get_money_get_bread(database: &DatabaseConnection) -> String {
         .await
         .unwrap_or_default();
     let balance = central_bank.map_or(0, |bank| bank.balance);
-    make_numbers_pretty(balance).await
+    make_numbers_pretty(balance)
 }
 
 /// Deletes every message in the channel, bulk-deleting where possible

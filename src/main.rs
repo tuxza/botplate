@@ -92,7 +92,7 @@ async fn main() -> Result<(), errors::Error> {
                 Ok(Data {
                     database: db,
                     user_map: DashMap::new(),
-                    admins: admins,
+                    admins,
                     start_time: start,
                 })
             })

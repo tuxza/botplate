@@ -23,7 +23,7 @@ pub async fn inventory(ctx: poise::Context<'_, crate::Data, Error>) -> Result<()
         .color(0x7492B9)
         .title("your inventory")
         .field("items", format!("\n{list}"), false)
-        .footer(random_footer().await);
+        .footer(random_footer());
 
     let reply = poise::CreateReply::default().embed(embed);
 
