@@ -7,7 +7,6 @@
 pub mod buy;
 pub mod db;
 mod helpers;
-pub mod list;
 pub mod manage;
 pub mod sell;
 

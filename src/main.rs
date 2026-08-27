@@ -69,7 +69,7 @@ async fn main() -> Result<(), errors::Error> {
                 shops::manage::shop(),
                 shops::manage::items(),
                 shops::buy::items::buy(),
-                shops::list::list(),
+                shops::buy::list::list(),
                 admin::commands::rule(),
                 admin::commands::resend_rules(),
             ],

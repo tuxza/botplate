@@ -71,6 +71,15 @@ pub async fn delete_shop(
     Ok(())
 }
 
+pub async fn rename_shop(
+    http: &Http,
+    uid: UserId,
+    database: &DatabaseConnection,
+    new_name: &str,
+) -> Result<(), Error> {
+    Ok(())
+}
+
 // i thought to myself to maybe call this on startup, and THEN have a global struct that holds a bool or something,
 // but.. this is literally an API call and.. i dont really think it matters too much. someone can OBVIOUSLY
 // correct me on that but.. whatevs!

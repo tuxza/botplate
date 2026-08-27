@@ -31,36 +31,39 @@ pub async fn create(
     #[description = "The name of your new business"] channel_name: String,
 ) -> Result<(), Error> {
     let guild_id = ctx.guild().ok_or(Error::Custom("no guild".to_string()))?.id; // holy shit this is so fucking funny
-    let user_id = ctx.author().id;
+    let uid = ctx.author().id;
 
-    let channel_id = helpers::create_shop(
+    let cid = helpers::create_shop(
         ctx.http(),
         guild_id,
-        user_id,
+        uid,
         channel_name,
         &ctx.data().database,
     )
     .await?;
 
-    ctx.say(format!("shop created! {}", channel_id.mention()))
-        .await?;
+    ctx.say(format!("shop created! {}", cid.mention())).await?;
 
-    channel_id
-        .send_message(
-            ctx.http(),
-            serenity::CreateMessage::new()
-                .content(format!("welcome to your new shop! {}", user_id.mention())),
-        )
-        .await?;
+    cid.send_message(
+        ctx.http(),
+        serenity::CreateMessage::new()
+            .content(format!("welcome to your new shop! {}", uid.mention())),
+    )
+    .await?;
 
+    Ok(())
+}
+
+/// manage your shop
+#[poise::command(slash_command, prefix_command)]
+pub async fn manage(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     Ok(())
 }
 
 /// delete your shop
 #[poise::command(slash_command, prefix_command)]
 pub async fn delete(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
-    let user_id = ctx.author().id;
-    helpers::delete_shop(ctx.http(), user_id, &ctx.data().database).await?;
+    helpers::delete_shop(ctx.http(), ctx.author().id, &ctx.data().database).await?;
     ctx.say("shop deleted").await?;
     Ok(())
 }
