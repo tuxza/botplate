@@ -99,25 +99,18 @@ pub async fn gamble(
     #[description = "how many tuxbux to gamble"] wager: i64,
 ) -> Result<(), Error> {
     let author = ctx.author();
-    let balance = helpers::db_get_balance(author.id.get(), &ctx.data().database).await;
-    if wager <= 0 {
-        ctx.say("you gotta gamble a positive amount, dummy.")
+    let deducted = helpers::db_try_deduct(author.id.get(), wager, &ctx.data().database).await?;
+    if !deducted {
+        ctx.say(format!("you don't have {wager} tuxbux to gamble!"))
             .await?;
         return Ok(());
     }
-    if balance < wager {
-        ctx.say(format!(
-            "you don't have {wager} tuxbux to gamble! your balance: {balance}"
-        ))
-        .await?;
-        return Ok(());
-    }
-    helpers::db_edit_balance(author.id.get(), -wager, &ctx.data().database).await?;
+
     let won = rand::random::<bool>();
     if won {
-        let amount = wager * 2;
-        helpers::db_edit_balance(author.id.get(), amount, &ctx.data().database).await?;
-        ctx.say(format!("you won! +{amount} tuxbux")).await?;
+        let payout = wager * 2;
+        helpers::db_edit_balance(author.id.get(), payout, &ctx.data().database).await?;
+        ctx.say(format!("you won! +{wager} tuxbux")).await?;
     } else {
         ctx.say(format!("you lost! -{wager} tuxaroos")).await?;
     }

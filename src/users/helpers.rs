@@ -175,3 +175,22 @@ pub async fn get_user_xp_and_level(
 
     Ok(rank)
 }
+
+pub async fn db_try_deduct(
+    uid: u64,
+    amount: i64,
+    database: &DatabaseConnection,
+) -> Result<bool, DbErr> {
+    ensure_user_exists(uid.cast_signed(), database).await?;
+    let result = Users::update_many()
+        .col_expr(
+            UsersColumn::Tokens,
+            Expr::col(UsersColumn::Tokens).sub(amount),
+        )
+        .filter(UsersColumn::Id.eq(uid))
+        .filter(UsersColumn::Tokens.gte(amount)) // <-- the guard
+        .exec(database)
+        .await?;
+
+    Ok(result.rows_affected > 0)
+}
