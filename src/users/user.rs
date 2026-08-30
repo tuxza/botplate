@@ -96,30 +96,30 @@ pub async fn rank(
 #[poise::command(prefix_command, slash_command)]
 pub async fn gamble(
     ctx: poise::Context<'_, crate::Data, Error>,
-    #[description = "how many tuxbux to gamble"] amount: i64,
+    #[description = "how many tuxbux to gamble"] wager: i64,
 ) -> Result<(), Error> {
     let author = ctx.author();
     let balance = helpers::db_get_balance(author.id.get(), &ctx.data().database).await;
-    if amount <= 0 {
+    if wager <= 0 {
         ctx.say("you gotta gamble a positive amount, dummy.")
             .await?;
         return Ok(());
     }
-    if balance < amount {
+    if balance < wager {
         ctx.say(format!(
-            "you don't have {amount} tuxbux to gamble! your balance: {balance}"
+            "you don't have {wager} tuxbux to gamble! your balance: {balance}"
         ))
         .await?;
         return Ok(());
     }
+    helpers::db_edit_balance(author.id.get(), -wager, &ctx.data().database).await?;
     let won = rand::random::<bool>();
     if won {
-        let amount = amount * 2;
+        let amount = wager * 2;
         helpers::db_edit_balance(author.id.get(), amount, &ctx.data().database).await?;
         ctx.say(format!("you won! +{amount} tuxbux")).await?;
     } else {
-        helpers::db_edit_balance(author.id.get(), -amount, &ctx.data().database).await?;
-        ctx.say(format!("you lost! -{amount} tuxaroos")).await?;
+        ctx.say(format!("you lost! -{wager} tuxaroos")).await?;
     }
     Ok(())
 }
