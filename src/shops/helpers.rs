@@ -58,7 +58,7 @@ pub async fn delete_shop(
     uid: UserId,
     database: &DatabaseConnection,
 ) -> Result<(), Error> {
-    let audit_log_reason = "Deleted by user.";
+    let audit_log_reason = "Deleted by {uid}";
 
     let Some(channel_id) = db_get_shop_channel_id(uid.get().cast_signed(), database).await? else {
         return Err(Error::Custom("you don't own a shop!".into()));
@@ -71,12 +71,12 @@ pub async fn delete_shop(
     Ok(())
 }
 
-pub async fn rename_shop(
-    http: &Http,
-    uid: UserId,
-    database: &DatabaseConnection,
-    new_name: &str,
-) -> Result<(), Error> {
+pub async fn rename_shop(http: &Http, channel_id: ChannelId, new_name: &str) -> Result<(), Error> {
+    let builder = serenity::EditChannel::new().name(new_name);
+    if let Err(why) = channel_id.edit(&http, builder).await {
+        return Err(Error::Discord(Box::new(why)));
+    }
+
     Ok(())
 }
 

@@ -3,13 +3,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 // src/channels/shops.rs
-
 use crate::errors::Error;
+use crate::shops::db::db_verify_shop_owner;
 use crate::shops::helpers;
 use poise::serenity_prelude::{self as serenity, Mentionable};
 
 /// manage your shops
-#[poise::command(slash_command, prefix_command, subcommands("create", "delete"))]
+#[poise::command(
+    slash_command,
+    prefix_command,
+    subcommands("create", "delete", "manage")
+)]
 pub async fn shop(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     ctx.say("bro go AWAY").await?;
     Ok(())
@@ -56,7 +60,21 @@ pub async fn create(
 
 /// manage your shop
 #[poise::command(slash_command, prefix_command)]
-pub async fn manage(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
+pub async fn manage(
+    ctx: poise::Context<'_, crate::Data, Error>,
+    #[description = "The name of your new business"] new_name: String,
+) -> Result<(), Error> {
+    let cid = ctx.channel_id().get();
+    let uid = ctx.author().id.get();
+
+    if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
+        ctx.say("this isn't your shop!").await?;
+        return Ok(());
+    }
+
+    helpers::rename_shop(ctx.http(), ctx.channel_id(), &new_name).await?;
+
+    ctx.say("shop renamed").await?;
     Ok(())
 }
 
