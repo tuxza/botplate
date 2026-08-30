@@ -45,7 +45,7 @@ pub async fn buy(
     let amount = -acquired_price;
     let database = &ctx.data().database;
 
-    crate::users::helpers::db_edit_balance(uid, amount, database).await?;
+    crate::users::db::db_edit_balance(uid, amount, database).await?;
 
     db_add_inv_item(uid, item_id, quantity, acquired_price, &ctx.data().database).await?;
 
@@ -59,7 +59,7 @@ pub async fn buy(
     let uid = owner.cast_unsigned(); // shadow shadow shadow!!!
     let amount = acquired_price;
 
-    crate::users::helpers::db_edit_balance(uid, amount, database).await?;
+    crate::users::db::db_edit_balance(uid, amount, database).await?;
 
     db_remove_item(cid, &found_item.name, quantity, &ctx.data().database).await?;
 

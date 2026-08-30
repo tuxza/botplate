@@ -4,6 +4,6 @@
 
 // /src/users/mod.rs
 
-pub mod helpers;
+pub mod db;
 pub mod inventory;
 pub mod user;

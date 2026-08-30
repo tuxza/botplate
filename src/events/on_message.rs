@@ -83,7 +83,7 @@ pub async fn on_message(
             .send_message(&ctx.http, serenity::CreateMessage::new().embed(embed))
             .await?;
 
-        crate::users::helpers::db_edit_balance(uid, tokens_earned, database).await?;
+        crate::users::db::db_edit_balance(uid, tokens_earned, database).await?;
     }
 
     Ok(())
