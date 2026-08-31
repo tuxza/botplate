@@ -137,7 +137,9 @@ pub async fn db_edit_balance(
     amount: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    ensure_user_exists(uid.cast_signed(), database).await?;
+    let uid = uid.cast_signed();
+
+    ensure_user_exists(uid, database).await?;
 
     Users::update_many()
         .col_expr(
@@ -149,6 +151,25 @@ pub async fn db_edit_balance(
         .await?;
 
     Ok(())
+}
+
+pub async fn db_deduct(
+    uid: u64,
+    amount: i64,
+    database: &DatabaseConnection,
+) -> Result<bool, DbErr> {
+    ensure_user_exists(uid.cast_signed(), database).await?;
+    let result = Users::update_many()
+        .col_expr(
+            UsersColumn::Tokens,
+            Expr::col(UsersColumn::Tokens).sub(amount),
+        )
+        .filter(UsersColumn::Id.eq(uid))
+        .filter(UsersColumn::Tokens.gte(amount))
+        .exec(database)
+        .await?;
+
+    Ok(result.rows_affected > 0)
 }
 
 /// Returns the user's XP and level.
@@ -174,23 +195,4 @@ pub async fn get_user_xp_and_level(
     user_map.insert(uid, rank);
 
     Ok(rank)
-}
-
-pub async fn db_try_deduct(
-    uid: u64,
-    amount: i64,
-    database: &DatabaseConnection,
-) -> Result<bool, DbErr> {
-    ensure_user_exists(uid.cast_signed(), database).await?;
-    let result = Users::update_many()
-        .col_expr(
-            UsersColumn::Tokens,
-            Expr::col(UsersColumn::Tokens).sub(amount),
-        )
-        .filter(UsersColumn::Id.eq(uid))
-        .filter(UsersColumn::Tokens.gte(amount)) // <-- the guard
-        .exec(database)
-        .await?;
-
-    Ok(result.rows_affected > 0)
 }

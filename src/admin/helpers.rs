@@ -5,7 +5,7 @@ const RULES: &[&str] = &[
     "2. Keep content appropriate for all ages — no NSFW, 18+, or gore content.",
     "3. No illegal activity — this includes doxxing, sharing malicious links, exploiting, or impersonating others.",
     "4. Don't share personal information (yours or others'), including addresses, passwords, or private accounts.",
-    "5. Keep arguments civil — prolonged drama, baiting, or instigation is not allowed.",
+    "5. Keep arguments civil — prolonged drama, baiting, or instigation is not allowed. Do not bring outside drama into the server.",
     "6. Respect the decisions of moderators and admins. If you disagree, discuss it calmly in private.",
     "7. Don't advertise other servers, services, or social media without admin permission.",
     "8. Follow channel-specific rules and post in the correct channels.",

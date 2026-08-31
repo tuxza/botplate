@@ -4,6 +4,10 @@
 
 // src/shops/helpers.rs
 
+use crate::errors::Error;
+use crate::shops::db::{
+    db_create_channel, db_delete_shop, db_get_shop_channel_id, db_user_has_shop,
+};
 use poise::serenity_prelude as serenity;
 use sea_orm::DatabaseConnection;
 use serenity::builder::CreateChannel;
@@ -14,11 +18,6 @@ use serenity::model::channel::{
 use serenity::model::id::{ChannelId, GuildId, UserId};
 use serenity::model::permissions::Permissions;
 use std::collections::HashMap;
-
-use crate::errors::Error;
-use crate::shops::db::{
-    db_create_channel, db_delete_shop, db_get_shop_channel_id, db_user_has_shop,
-};
 
 pub async fn create_shop(
     http: &Http,
@@ -76,7 +75,6 @@ pub async fn rename_shop(http: &Http, channel_id: ChannelId, new_name: &str) -> 
     if let Err(why) = channel_id.edit(&http, builder).await {
         return Err(Error::Discord(Box::new(why)));
     }
-
     Ok(())
 }
 

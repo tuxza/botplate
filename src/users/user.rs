@@ -98,7 +98,7 @@ pub async fn gamble(
     #[description = "how many tuxbux to gamble"] wager: i64,
 ) -> Result<(), Error> {
     let author = ctx.author();
-    let deducted = db::db_try_deduct(author.id.get(), wager, &ctx.data().database).await?;
+    let deducted = db::db_deduct(author.id.get(), wager, &ctx.data().database).await?;
     if !deducted {
         ctx.say(format!("you don't have {wager} tuxbux to gamble!"))
             .await?;
