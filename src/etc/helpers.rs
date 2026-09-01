@@ -6,9 +6,16 @@
 
 use sysinfo::System;
 
+fn get_pretty_name() -> Option<String> {
+    let content = std::fs::read_to_string("/etc/os-release").ok()?;
+    content
+        .lines()
+        .find_map(|line| line.strip_prefix("PRETTY_NAME="))
+        .map(|v| v.trim_matches('"').to_string())
+}
+
 pub struct SysInfo {
     pub os_name: Option<String>,
-    pub os_vers: Option<String>,
     pub h_used_memory: u64,
     pub h_total_memory: u64,
     pub h_uptime: u64,
@@ -26,8 +33,7 @@ pub fn get_sysinfo() -> Option<SysInfo> {
     // h = host if you cant read
 
     Some(SysInfo {
-        os_name: System::name(),
-        os_vers: System::os_version(),
+        os_name: get_pretty_name(),
         h_used_memory: sys.used_memory(),
         h_total_memory: sys.total_memory(),
         h_uptime: System::uptime(),

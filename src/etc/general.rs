@@ -70,11 +70,7 @@ pub async fn info(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
         )
         .field(
             "OS",
-            format!(
-                "{} {}",
-                sys.os_name.unwrap_or_else(|| "Unknown".to_string()),
-                sys.os_vers.unwrap_or_else(|| "Unknown".to_string())
-            ),
+            sys.os_name.unwrap_or_else(|| "Unknown".to_string()),
             false,
         )
         .field(
