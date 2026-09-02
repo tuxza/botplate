@@ -8,7 +8,11 @@ use crate::shops::buy::db::db_remove_item;
 use crate::shops::db::db_verify_shop_exists;
 use crate::users::inventory::db::db_add_inv_item;
 
-use crate::{errors::Error, shops::buy::db::db_get_item, shops::db::db_get_shop_owner_id};
+use poise::serenity_prelude::UserId;
+
+use crate::{
+    errors::Error, shops::buy::db::db_get_item, shops::db::db_get_shop_owner_id, types::TuxBux,
+};
 
 /// Buy an item from a shop.
 #[poise::command(slash_command, prefix_command)]
@@ -17,8 +21,8 @@ pub async fn buy(
     #[description = "name of the item to buy"] item: String,
     #[description = "how many you want"] quantity: i64,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get();
-    let cid = ctx.channel_id().get();
+    let uid = ctx.author().id;
+    let cid = ctx.channel_id();
 
     if !db_verify_shop_exists(cid, &ctx.data().database).await? {
         ctx.say("this isn't a shop!").await?;
@@ -45,7 +49,7 @@ pub async fn buy(
     let amount = -acquired_price;
     let database = &ctx.data().database;
 
-    crate::users::db::db_edit_balance(uid, amount, database).await?;
+    crate::users::db::db_deduct_balance(uid, TuxBux(amount), database).await?;
 
     db_add_inv_item(uid, item_id, quantity, acquired_price, &ctx.data().database).await?;
 
@@ -56,11 +60,10 @@ pub async fn buy(
         ));
     };
 
-    let uid = owner;
+    let uid = UserId::from(owner.cast_unsigned());
     let amount = acquired_price;
 
-    crate::users::db::db_edit_balance(uid.cast_unsigned(), amount, database).await?;
-
+    crate::users::db::db_add_balance(uid, amount.into(), database).await?; // database -> signed -> unsigned -> signed -> database
     db_remove_item(cid, &found_item.name, quantity, &ctx.data().database).await?;
 
     ctx.say(format!(

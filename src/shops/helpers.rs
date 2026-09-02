@@ -43,12 +43,7 @@ pub async fn create_shop(
         create_channel = create_channel.category(cat_id);
     }
     let new_channel = guild_id.create_channel(http, create_channel).await?;
-    db_create_channel(
-        new_channel.id.get().cast_signed(),
-        uid.get().cast_signed(),
-        database,
-    )
-    .await?;
+    db_create_channel(new_channel.id.get().cast_signed(), uid, database).await?;
     Ok(new_channel.id)
 }
 
@@ -59,7 +54,7 @@ pub async fn delete_shop(
 ) -> Result<(), Error> {
     let audit_log_reason = "Deleted by {uid}";
 
-    let Some(channel_id) = db_get_shop_channel_id(uid.get().cast_signed(), database).await? else {
+    let Some(channel_id) = db_get_shop_channel_id(uid, database).await? else {
         return Err(Error::Custom("you don't own a shop!".into()));
     };
 
@@ -86,7 +81,7 @@ pub async fn check_category(
     guild_id: GuildId,
     channels: &HashMap<ChannelId, GuildChannel>,
     category_name: &str,
-) -> Result<Option<ChannelId>, serenity::Error> {
+) -> Result<Option<ChannelId>, Error> {
     let mut category_id = channels
         .values()
         .find(|ch| ch.kind == ChannelType::Category && ch.name.eq_ignore_ascii_case(category_name))

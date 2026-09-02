@@ -8,6 +8,7 @@ use crate::errors::Error;
 use crate::shops::buy::db::db_remove_item;
 use crate::shops::db::db_verify_shop_owner;
 use crate::shops::sell::db;
+use crate::types::TuxBux;
 
 /// List an item for sale in your shop.
 #[poise::command(slash_command, prefix_command)]
@@ -18,8 +19,8 @@ pub async fn sell(
     #[description = "how many to list"] quantity: i64,
     #[description = "description"] description: Option<String>,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get();
-    let cid = ctx.channel_id().get();
+    let uid = ctx.author().id;
+    let cid = ctx.channel_id();
 
     if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;
@@ -39,7 +40,7 @@ pub async fn sell(
         name,
         description.unwrap_or_default(),
         "product".to_string(),
-        price,
+        TuxBux(price),
         quantity,
         &ctx.data().database,
     )
@@ -56,8 +57,8 @@ pub async fn remove(
     #[description = "item name"] name: String,
     #[description = "quantity"] quantity: i64,
 ) -> Result<(), Error> {
-    let uid = ctx.author().id.get();
-    let cid = ctx.channel_id().get();
+    let uid = ctx.author().id;
+    let cid = ctx.channel_id();
 
     if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;

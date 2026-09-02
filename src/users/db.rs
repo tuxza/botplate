@@ -8,7 +8,9 @@ use crate::entities::prelude::Users;
 use crate::entities::types::UsersActiveModel;
 use crate::entities::types::UsersColumn;
 use crate::global::ensure_user_exists;
+use crate::types::TuxBux;
 use dashmap::DashMap;
+use poise::serenity_prelude::UserId;
 use sea_orm::{
     ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
     sea_query::Expr, sea_query::OnConflict,
@@ -34,8 +36,8 @@ use sea_orm::{
 ///     println!("Last claimed at: {ts}");
 /// }
 /// ```
-pub async fn db_last_daily(uid: u64, database: &DatabaseConnection) -> Option<i64> {
-    Users::find_by_id(uid.cast_signed())
+pub async fn db_last_daily(uid: UserId, database: &DatabaseConnection) -> Option<i64> {
+    Users::find_by_id(uid)
         .one(database)
         .await
         .ok()
@@ -75,9 +77,9 @@ pub fn can_claim_daily(last_daily: Option<i64>) -> bool {
 /// # Returns
 ///
 /// * it returns nothing, lol.. i should fix that.
-pub async fn db_set_last_daily(uid: u64, timestamp: i64, database: &DatabaseConnection) {
+pub async fn db_set_last_daily(uid: UserId, timestamp: i64, database: &DatabaseConnection) {
     let active_model = UsersActiveModel {
-        id: Set(uid.cast_signed()),
+        id: Set(uid.into()),
         last_daily: Set(Some(timestamp)),
         ..Default::default()
     };
@@ -127,45 +129,43 @@ pub async fn db_get_balance(uid: u64, database: &DatabaseConnection) -> i64 {
 ///
 /// ```ignore
 /// // Add 500 tokens
-/// db_edit_balance(123456789, 500, &db).await;
+/// db_add_balance(123456789, 500, &db).await;
 ///
 /// // Deduct 150 tokens
-/// db_edit_balance(123456789, -150, &db).await;
+/// db_add_balance(123456789, TuxBux(-150), &db).await;
 /// ```
-pub async fn db_edit_balance(
-    uid: u64,
-    amount: i64,
+pub async fn db_add_balance(
+    uid: UserId,
+    amount: TuxBux,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    let uid = uid.cast_signed();
-
     ensure_user_exists(uid, database).await?;
 
     Users::update_many()
         .col_expr(
             UsersColumn::Tokens,
-            Expr::col(UsersColumn::Tokens).add(amount),
+            Expr::col(UsersColumn::Tokens).add(amount.0),
         )
-        .filter(UsersColumn::Id.eq(uid))
+        .filter(UsersColumn::Id.eq(uid.get()))
         .exec(database)
         .await?;
 
     Ok(())
 }
 
-pub async fn db_deduct(
-    uid: u64,
-    amount: i64,
+pub async fn db_deduct_balance(
+    uid: UserId,
+    amount: TuxBux,
     database: &DatabaseConnection,
 ) -> Result<bool, DbErr> {
-    ensure_user_exists(uid.cast_signed(), database).await?;
+    ensure_user_exists(uid, database).await?;
     let result = Users::update_many()
         .col_expr(
             UsersColumn::Tokens,
-            Expr::col(UsersColumn::Tokens).sub(amount),
+            Expr::col(UsersColumn::Tokens).sub(amount.0),
         )
-        .filter(UsersColumn::Id.eq(uid))
-        .filter(UsersColumn::Tokens.gte(amount))
+        .filter(UsersColumn::Id.eq(uid.get()))
+        .filter(UsersColumn::Tokens.gte(amount.0))
         .exec(database)
         .await?;
 
@@ -181,15 +181,15 @@ pub async fn db_deduct(
 ///
 /// Returns `(0, 0)` if the user does not exist in either the cache or DB.
 pub async fn get_user_xp_and_level(
-    uid: u64,
-    user_map: &DashMap<u64, (i64, i64, i64)>,
+    uid: UserId,
+    user_map: &DashMap<UserId, (i64, i64, i64)>,
     database: &DatabaseConnection,
 ) -> Result<(i64, i64, i64), DbErr> {
     if let Some(entry) = user_map.get(&uid) {
         return Ok(*entry);
     }
 
-    let user = Users::find_by_id(uid.cast_signed()).one(database).await?;
+    let user = Users::find_by_id(uid).one(database).await?;
     let rank = user.map_or((0, 0, 0), |u| (u.xp, u.level, u.tokens));
 
     user_map.insert(uid, rank);

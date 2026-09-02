@@ -64,15 +64,15 @@ pub async fn manage(
     ctx: poise::Context<'_, crate::Data, Error>,
     #[description = "The name of your new business"] new_name: String,
 ) -> Result<(), Error> {
-    let cid = ctx.channel_id().get();
-    let uid = ctx.author().id.get();
+    let cid = ctx.channel_id();
+    let uid = ctx.author().id;
 
     if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;
         return Ok(());
     }
 
-    helpers::rename_shop(ctx.http(), ctx.channel_id(), &new_name).await?;
+    helpers::rename_shop(ctx.http(), cid, &new_name).await?;
 
     ctx.say("shop renamed").await?;
     Ok(())

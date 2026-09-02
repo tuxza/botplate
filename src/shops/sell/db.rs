@@ -9,6 +9,10 @@ use sea_orm::{ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTr
 use crate::entities::prelude::Items;
 use crate::entities::types::{ItemsActiveModel, ItemsColumn};
 
+use crate::types::TuxBux;
+
+use poise::serenity_prelude::ChannelId;
+
 /// Adds an item to the database.
 ///
 /// # Arguments
@@ -26,17 +30,19 @@ use crate::entities::types::{ItemsActiveModel, ItemsColumn};
 /// * `Ok(())` - success
 /// * `Err(DbErr)` - An error occurred while adding the item.
 pub async fn add_item(
-    cid: u64,
+    cid: ChannelId,
     name: String,
     description: String,
     item_type: String,
-    price: i64,
+    price: TuxBux,
     quantity: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
+    let price = price.get(); // this was pissing me off and im tired, ill fix it one day.
+
     let existing = Items::find()
         .filter(ItemsColumn::Name.eq(&name))
-        .filter(ItemsColumn::OriginCid.eq(cid))
+        .filter(ItemsColumn::OriginCid.eq(cid.get()))
         .one(database)
         .await?;
 
@@ -54,7 +60,7 @@ pub async fn add_item(
             item_type: Set(item_type),
             price: Set(price),
             quantity: Set(quantity),
-            origin_cid: Set(Some(cid.cast_signed())),
+            origin_cid: Set(Some(cid.get().cast_signed())),
             ..Default::default()
         };
         Items::insert(active_model).exec(database).await?;

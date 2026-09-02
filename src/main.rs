@@ -6,7 +6,7 @@
 
 #![allow(clippy::unreadable_literal)]
 #![allow(clippy::print_stdout)]
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{self as serenity, UserId};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use std::time::Instant;
 
@@ -14,7 +14,7 @@ use dashmap::DashMap;
 
 pub struct Data {
     pub database: DatabaseConnection,
-    pub user_map: DashMap<u64, (i64, i64, i64)>,
+    pub user_map: DashMap<UserId, (i64, i64, i64)>,
     pub admins: Vec<u64>,
     pub start_time: Instant,
 }
@@ -26,6 +26,7 @@ mod etc;
 mod events;
 mod global;
 mod shops;
+mod types;
 mod users;
 
 #[tokio::main]

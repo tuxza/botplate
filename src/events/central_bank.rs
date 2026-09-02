@@ -4,6 +4,7 @@
 // /src/events/central_bank.rs
 #![allow(clippy::unreadable_literal)]
 use crate::entities;
+use crate::errors;
 use crate::global::make_numbers_pretty;
 use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::ChannelId;
@@ -26,7 +27,7 @@ async fn get_money_get_bread(database: &DatabaseConnection) -> String {
 /// Deletes every message in the channel, bulk-deleting where possible
 /// (Discord only allows bulk delete on messages < 14 days old, 2-100 at a time)
 /// and falling back to one-by-one deletion for anything older.
-async fn purge_channel(http: &serenity::Http, channel_id: ChannelId) -> serenity::Result<()> {
+async fn purge_channel(http: &serenity::Http, channel_id: ChannelId) -> Result<(), errors::Error> {
     loop {
         let messages = channel_id
             .messages(http, GetMessages::new().limit(100))
@@ -68,7 +69,7 @@ pub async fn send_bank_embed(
     http: &serenity::Http,
     channel_id: ChannelId,
     database: &DatabaseConnection,
-) -> serenity::Result<serenity::Message> {
+) -> Result<serenity::Message, errors::Error> {
     purge_channel(http, channel_id).await?;
 
     let central_bank = get_money_get_bread(database).await;
@@ -94,7 +95,7 @@ pub async fn send_bank_embed(
         .footer(
             poise::serenity_prelude::CreateEmbedFooter::new(format!("botplate-rs | botplate reimagined | {}", env!("CARGO_PKG_VERSION"))),
         );
-    channel_id
+    Ok(channel_id
         .send_message(http, CreateMessage::new().embed(embed))
-        .await
+        .await?)
 }

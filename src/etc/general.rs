@@ -46,8 +46,6 @@ pub async fn ping(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Err
 /// get information about botplate!
 #[poise::command(slash_command)]
 pub async fn info(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
-    // Safely destructure the Option without panicking.
-    // If it fails, we return an error message to the Discord context.
     let Some(sys) = helpers::get_sysinfo() else {
         ctx.say("❌ Failed to retrieve system statistics.").await?;
         return Ok(());

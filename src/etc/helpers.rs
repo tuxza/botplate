@@ -6,6 +6,7 @@
 
 use sysinfo::System;
 
+// sysinfo wasnt satisfactory, so i made this dumb thing
 fn get_pretty_name() -> Option<String> {
     let content = std::fs::read_to_string("/etc/os-release").ok()?;
     content

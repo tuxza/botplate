@@ -5,7 +5,7 @@ use poise::serenity_prelude::CreateEmbed;
 #[poise::command(prefix_command, slash_command)]
 pub async fn inventory(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let items =
-        crate::users::inventory::db::db_get_inventory(ctx.author().id.get(), &ctx.data().database)
+        crate::users::inventory::db::db_get_inventory(ctx.author().id, &ctx.data().database)
             .await?;
 
     if items.is_empty() {

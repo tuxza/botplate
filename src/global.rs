@@ -7,15 +7,18 @@
 use crate::entities::prelude::Users;
 use crate::entities::types::{UsersActiveModel, UsersColumn};
 use poise::serenity_prelude::CreateEmbedFooter;
+use poise::serenity_prelude::UserId;
 use rand::RngExt;
 use sea_orm::sea_query::OnConflict;
 use sea_orm::{ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait};
 
+use crate::types::UserId64;
+
 /// Ensures a user row exists in the database, creating one with a
 /// starting balance, debt, xp, etc. of 0 if it doesn't. No-op if the user already exists.
-pub async fn ensure_user_exists(uid: i64, database: &DatabaseConnection) -> Result<(), DbErr> {
+pub async fn ensure_user_exists(uid: UserId, database: &DatabaseConnection) -> Result<(), DbErr> {
     let active_model = UsersActiveModel {
-        id: Set(uid),
+        id: Set(UserId64::from(uid).get()),
         tokens: Set(0),
         debt: Set(0),
         last_daily: Set(None),
@@ -37,7 +40,7 @@ pub async fn ensure_user_exists(uid: i64, database: &DatabaseConnection) -> Resu
 
 // this could be a lot more elegant and nice to work with, but.. im a lazy ass.
 
-pub fn is_admin(author: u64, admins: &Vec<u64>) -> bool {
+pub fn is_admin(author: u64, admins: &[u64]) -> bool {
     admins.contains(&author)
 }
 

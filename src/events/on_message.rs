@@ -14,13 +14,15 @@ use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection, EntityTrai
 use crate::entities::prelude::Users;
 use crate::entities::types::UsersActiveModel;
 use crate::errors::Error;
+use crate::types::TuxBux;
+use poise::serenity_prelude::UserId;
 
 // I HATED WRITING THIS AND I HOPE IT DIES
 
 pub async fn on_message(
     new_message: &serenity::Message,
     ctx: &serenity::Context,
-    user_map: &DashMap<u64, (i64, i64, i64)>,
+    user_map: &DashMap<UserId, (i64, i64, i64)>,
     database: &DatabaseConnection,
     xp_per_level: i64,
 ) -> Result<(), Error> {
@@ -28,13 +30,12 @@ pub async fn on_message(
         return Ok(());
     }
 
-    let uid = new_message.author.id.get();
+    let uid = new_message.author.id;
 
     // if the user is not in the map, fetch their xp/level from the database. so yk..
     // we dont have to ask the DB everytime someone sends a message.
-    // i (hope) this is faster than querying the database. (i hope.)
     if !user_map.contains_key(&uid) {
-        let (xp, level) = Users::find_by_id(uid.cast_signed())
+        let (xp, level) = Users::find_by_id(uid)
             .one(database)
             .await?
             .map_or((0, 0), |u| (u.xp, u.level));
@@ -83,7 +84,7 @@ pub async fn on_message(
             .send_message(&ctx.http, serenity::CreateMessage::new().embed(embed))
             .await?;
 
-        crate::users::db::db_edit_balance(uid, tokens_earned, database).await?;
+        crate::users::db::db_add_balance(uid, TuxBux(tokens_earned), database).await?;
     }
 
     Ok(())
@@ -92,14 +93,16 @@ pub async fn on_message(
 // now CONTRIBUTING.md would tell you to put this in db.rs
 // but i dont follow my own rules.
 
+use crate::types::UserId64;
+
 async fn level_up(
-    uid: u64,
+    uid: UserId,
     xp: i64,
     level: i64,
     database: &DatabaseConnection,
 ) -> Result<(), Error> {
     let active_model = UsersActiveModel {
-        id: Set(uid.cast_signed()),
+        id: Set(UserId64::from(uid).get()),
         xp: Set(xp),
         level: Set(level),
         ..Default::default()

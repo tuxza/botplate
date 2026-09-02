@@ -36,7 +36,7 @@ pub async fn on_channel_delete(
     db: &DatabaseConnection,
     channel_id: serenity::ChannelId,
 ) -> Result<(), Error> {
-    crate::shops::db::db_delete_channel_by_cid(channel_id.get().cast_signed(), db).await?;
+    crate::shops::db::db_delete_channel_by_cid(channel_id, db).await?;
     Ok(())
 }
 
@@ -47,9 +47,7 @@ pub async fn on_guild_join(
     db: &DatabaseConnection,
     new_member: &serenity::Member,
 ) -> Result<(), Error> {
-    let uid = new_member.user.id.get();
-    global::ensure_user_exists(uid.cast_signed(), db).await?;
-
+    global::ensure_user_exists(new_member.user.id, db).await?;
     println!("User {} joined the guild.", new_member.user.name);
     Ok(())
 }
