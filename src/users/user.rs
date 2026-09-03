@@ -41,11 +41,16 @@ pub async fn balance(
 #[poise::command(prefix_command, slash_command)]
 pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let uid = ctx.author().id;
-    let last = db::db_last_daily(uid, &ctx.data().database).await;
+    let last_daily = db::db_last_daily(uid, &ctx.data().database)
+        .await
+        .unwrap_or(0);
 
-    if !db::can_claim_daily(last) {
-        ctx.say("you already claimed your daily today! come back later please.")
-            .await?;
+    if !db::can_claim_daily(Some(last_daily)) {
+        let next_daily = last_daily + 86_400;
+        ctx.say(format!(
+            "you already claimed your daily today! come back <t:{next_daily}:R>"
+        ))
+        .await?;
         return Ok(());
     }
 
