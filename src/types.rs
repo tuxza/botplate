@@ -1,7 +1,6 @@
 // types.rs
 //
 
-#![allow(dead_code)]
 pub use poise::serenity_prelude::{ChannelId, UserId};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -31,12 +30,6 @@ impl From<UserId64> for sea_orm::Value {
     }
 }
 
-impl From<ChannelId64> for sea_orm::Value {
-    fn from(id: ChannelId64) -> Self {
-        id.0.into()
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ChannelId64(pub i64);
 
@@ -48,7 +41,13 @@ impl From<ChannelId> for ChannelId64 {
 
 impl From<ChannelId64> for i64 {
     fn from(cid: ChannelId64) -> Self {
-        cid.0
+        cid.0.into()
+    }
+}
+
+impl From<ChannelId64> for sea_orm::Value {
+    fn from(id: ChannelId64) -> Self {
+        id.0.into()
     }
 }
 
@@ -59,10 +58,25 @@ impl ChannelId64 {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ItemId(pub i64);
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Quantity(pub i64);
+
+impl Quantity {
+    pub fn get(self) -> i64 {
+        self.0
+    }
+}
+
+impl From<Quantity> for i64 {
+    fn from(q: Quantity) -> Self {
+        q.0
+    }
+}
+
+impl From<Quantity> for sea_orm::Value {
+    fn from(id: Quantity) -> Self {
+        id.0.into()
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TuxBux(pub i64);
@@ -81,12 +95,6 @@ impl std::ops::Mul<TuxBux> for TuxBux {
     }
 }
 
-impl From<TuxBux> for ChannelId64 {
-    fn from(tb: TuxBux) -> Self {
-        ChannelId64(tb.0)
-    }
-}
-
 impl From<TuxBux> for i64 {
     fn from(tb: TuxBux) -> Self {
         tb.0
@@ -102,5 +110,11 @@ impl TuxBux {
 impl From<i64> for TuxBux {
     fn from(amount: i64) -> Self {
         TuxBux(amount)
+    }
+}
+
+impl From<TuxBux> for sea_orm::Value {
+    fn from(tb: TuxBux) -> Self {
+        tb.0.into()
     }
 }

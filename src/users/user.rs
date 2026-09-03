@@ -24,7 +24,7 @@ pub async fn balance(
 
     let display_name = user.global_name.as_deref().unwrap_or(&user.name);
 
-    let balance = db::db_get_balance(uid.get(), &ctx.data().database).await;
+    let balance = db::db_get_balance(uid, &ctx.data().database).await;
     let balance = make_numbers_pretty(balance);
     let embed = CreateEmbed::new()
         .title(format!("Balance of {display_name}"))

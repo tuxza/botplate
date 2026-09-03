@@ -9,6 +9,7 @@ use crate::entities::types::UsersActiveModel;
 use crate::entities::types::UsersColumn;
 use crate::global::ensure_user_exists;
 use crate::types::TuxBux;
+use crate::types::UserId64;
 use dashmap::DashMap;
 use poise::serenity_prelude::UserId;
 use sea_orm::{
@@ -104,8 +105,8 @@ pub async fn db_set_last_daily(uid: UserId, timestamp: i64, database: &DatabaseC
 /// # Returns
 ///
 /// The user's balance as an `i64` value.
-pub async fn db_get_balance(uid: u64, database: &DatabaseConnection) -> i64 {
-    Users::find_by_id(uid.cast_signed())
+pub async fn db_get_balance(uid: UserId, database: &DatabaseConnection) -> i64 {
+    Users::find_by_id(UserId64::from(uid))
         .one(database)
         .await
         .ok()

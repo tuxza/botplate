@@ -2,13 +2,13 @@ use sea_orm::{ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait};
 
 use crate::entities::prelude::Inventory;
 use crate::entities::types::InventoryActiveModel;
-use crate::types::UserId64;
+use crate::types::{Quantity, UserId64};
 use poise::serenity_prelude::UserId;
 
 pub async fn db_add_inv_item(
     uid: UserId,
     item_id: i64,
-    quantity: i64,
+    quantity: Quantity,
     acquired_price: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
@@ -18,13 +18,13 @@ pub async fn db_add_inv_item(
 
     if let Some(model) = existing {
         let mut active_model: InventoryActiveModel = model.clone().into();
-        active_model.quantity = Set(model.quantity + quantity);
+        active_model.quantity = Set(model.quantity + quantity.0);
         Inventory::update(active_model).exec(database).await?;
     } else {
         let active_model = InventoryActiveModel {
             uid: Set(UserId64::from(uid).get()),
             item_id: Set(item_id),
-            quantity: Set(quantity),
+            quantity: Set(Quantity::from(quantity).into()),
             acquired_price: Set(acquired_price),
             can_resell: Set(true),
         };

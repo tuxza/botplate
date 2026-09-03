@@ -5,20 +5,20 @@
 // src/channels/db.rs
 use crate::entities::prelude::Channels;
 use crate::entities::types::{ChannelsActiveModel, ChannelsColumn};
-use crate::types::UserId64;
+use crate::types::{ChannelId64, UserId64};
 use poise::serenity_prelude::{ChannelId, UserId};
 use sea_orm::sea_query::OnConflict;
 use sea_orm::{ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 
 pub async fn db_create_channel(
-    new_cid: i64,
+    new_cid: ChannelId,
     uid: UserId,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
     crate::global::ensure_user_exists(uid, database).await?;
 
     let active_model = ChannelsActiveModel {
-        cid: Set(new_cid),
+        cid: Set(ChannelId64::from(new_cid).get()),
         uid: Set(UserId64::from(uid).get()),
         in_stock_market: Set(false),
     };
@@ -58,17 +58,17 @@ pub async fn db_get_shop_owner_id(
     Ok(channel.map(|c| c.uid))
 }
 
-pub async fn db_delete_shop(uid: i64, database: &DatabaseConnection) -> Result<(), DbErr> {
+pub async fn db_delete_shop(uid: UserId, database: &DatabaseConnection) -> Result<(), DbErr> {
     Channels::delete_many()
-        .filter(ChannelsColumn::Uid.eq(uid))
+        .filter(ChannelsColumn::Uid.eq(UserId64::from(uid)))
         .exec(database)
         .await?;
     Ok(())
 }
 
-pub async fn db_user_has_shop(uid: i64, database: &DatabaseConnection) -> Result<bool, DbErr> {
+pub async fn db_user_has_shop(uid: UserId, database: &DatabaseConnection) -> Result<bool, DbErr> {
     let existing = Channels::find()
-        .filter(ChannelsColumn::Uid.eq(uid))
+        .filter(ChannelsColumn::Uid.eq(UserId64::from(uid)))
         .one(database)
         .await?;
 
@@ -80,7 +80,7 @@ pub async fn db_delete_channel_by_cid(
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
     Channels::delete_many()
-        .filter(ChannelsColumn::Cid.eq(cid.get()))
+        .filter(ChannelsColumn::Cid.eq(ChannelId64::from(cid)))
         .exec(database)
         .await?;
     Ok(())

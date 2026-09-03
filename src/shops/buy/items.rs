@@ -11,7 +11,10 @@ use crate::users::inventory::db::db_add_inv_item;
 use poise::serenity_prelude::UserId;
 
 use crate::{
-    errors::Error, shops::buy::db::db_get_item, shops::db::db_get_shop_owner_id, types::TuxBux,
+    errors::Error,
+    shops::buy::db::db_get_item,
+    shops::db::db_get_shop_owner_id,
+    types::{Quantity, TuxBux},
 };
 
 /// Buy an item from a shop.
@@ -51,7 +54,14 @@ pub async fn buy(
 
     crate::users::db::db_deduct_balance(uid, TuxBux(amount), database).await?;
 
-    db_add_inv_item(uid, item_id, quantity, acquired_price, &ctx.data().database).await?;
+    db_add_inv_item(
+        uid,
+        item_id,
+        Quantity(quantity),
+        acquired_price,
+        &ctx.data().database,
+    )
+    .await?;
 
     let owner = db_get_shop_owner_id(cid, &ctx.data().database).await?;
     let Some(owner) = owner else {
@@ -64,7 +74,13 @@ pub async fn buy(
     let amount = acquired_price;
 
     crate::users::db::db_add_balance(uid, amount.into(), database).await?; // database -> signed -> unsigned -> signed -> database
-    db_remove_item(cid, &found_item.name, quantity, &ctx.data().database).await?;
+    db_remove_item(
+        cid,
+        &found_item.name,
+        Quantity(quantity),
+        &ctx.data().database,
+    )
+    .await?;
 
     ctx.say(format!(
         "Successfully bought {}x {}!",

@@ -9,7 +9,7 @@ use sea_orm::{ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTr
 use crate::entities::prelude::Items;
 use crate::entities::types::{ItemsActiveModel, ItemsColumn};
 
-use crate::types::TuxBux;
+use crate::types::{ChannelId64, Quantity, TuxBux};
 
 use poise::serenity_prelude::ChannelId;
 
@@ -35,14 +35,14 @@ pub async fn add_item(
     description: String,
     item_type: String,
     price: TuxBux,
-    quantity: i64,
+    quantity: Quantity,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    let price = price.get(); // this was pissing me off and im tired, ill fix it one day.
-
+    let price = price.into();
+    let quantity = quantity.get();
     let existing = Items::find()
         .filter(ItemsColumn::Name.eq(&name))
-        .filter(ItemsColumn::OriginCid.eq(cid.get()))
+        .filter(ItemsColumn::OriginCid.eq(ChannelId64::from(cid)))
         .one(database)
         .await?;
 
@@ -60,7 +60,7 @@ pub async fn add_item(
             item_type: Set(item_type),
             price: Set(price),
             quantity: Set(quantity),
-            origin_cid: Set(Some(cid.get().cast_signed())),
+            origin_cid: Set(Some(ChannelId64::from(cid).into())),
             ..Default::default()
         };
         Items::insert(active_model).exec(database).await?;

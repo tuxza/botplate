@@ -26,7 +26,7 @@ pub async fn create_shop(
     channel_name: String,
     database: &DatabaseConnection,
 ) -> Result<ChannelId, Error> {
-    if db_user_has_shop(uid.get().cast_signed(), database).await? {
+    if db_user_has_shop(uid, database).await? {
         return Err(Error::Custom("you already own a shop!".into()));
     }
     let channels = guild_id.channels(http).await?;
@@ -43,7 +43,7 @@ pub async fn create_shop(
         create_channel = create_channel.category(cat_id);
     }
     let new_channel = guild_id.create_channel(http, create_channel).await?;
-    db_create_channel(new_channel.id.get().cast_signed(), uid, database).await?;
+    db_create_channel(new_channel.id, uid, database).await?;
     Ok(new_channel.id)
 }
 
@@ -58,7 +58,7 @@ pub async fn delete_shop(
         return Err(Error::Custom("you don't own a shop!".into()));
     };
 
-    db_delete_shop(uid.get().cast_signed(), database).await?;
+    db_delete_shop(uid, database).await?;
     http.delete_channel(channel_id, Some(audit_log_reason))
         .await?;
 

@@ -8,7 +8,7 @@ use crate::errors::Error;
 use crate::shops::buy::db::db_remove_item;
 use crate::shops::db::db_verify_shop_owner;
 use crate::shops::sell::db;
-use crate::types::TuxBux;
+use crate::types::{Quantity, TuxBux};
 
 /// List an item for sale in your shop.
 #[poise::command(slash_command, prefix_command)]
@@ -41,7 +41,7 @@ pub async fn sell(
         description.unwrap_or_default(),
         "product".to_string(),
         TuxBux(price),
-        quantity,
+        Quantity(quantity),
         &ctx.data().database,
     )
     .await?;
@@ -65,7 +65,7 @@ pub async fn remove(
         return Ok(());
     }
 
-    db_remove_item(cid, name.as_str(), quantity, &ctx.data().database).await?;
+    db_remove_item(cid, name.as_str(), Quantity(quantity), &ctx.data().database).await?;
     ctx.say(format!("removed {name} x{quantity}")).await?;
     Ok(())
 }

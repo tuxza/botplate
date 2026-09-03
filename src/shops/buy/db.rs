@@ -8,7 +8,7 @@ use crate::entities::items::Model;
 
 use crate::entities::prelude::Items;
 use crate::entities::types::ItemsColumn;
-use crate::types::ChannelId64;
+use crate::types::{ChannelId64, Quantity};
 use sea_orm::sea_query::Expr;
 use sea_orm::{ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 
@@ -50,7 +50,7 @@ pub async fn db_get_item(
 pub async fn db_remove_item(
     cid: ChannelId,
     name: &str,
-    quantity: i64,
+    quantity: Quantity,
     database: &DatabaseConnection,
 ) -> Result<bool, DbErr> {
     let result = Items::update_many()
