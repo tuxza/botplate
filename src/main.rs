@@ -85,11 +85,29 @@ async fn main() -> Result<(), errors::Error> {
             },
             ..Default::default()
         })
+        // this is for when im testing, i dont have to change the channel this gets sent to
+        // see i could be real smart and put it in a config.toml
+        // but im just gonna let this thread explode when it cant be sent
+        // and in reality, this will help when we are updating the embed as well
+        // yay!
         .setup(move |ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+
                 let target_channel = serenity::ChannelId::new(1401390175770382366);
-                events::central_bank::send_bank_embed(&ctx.http, target_channel, &db).await?;
+
+                let http = ctx.http.clone();
+                let database = db.clone();
+
+                tokio::spawn(async move {
+                    if let Err(err) =
+                        events::central_bank::send_bank_embed(&http, target_channel, &database)
+                            .await
+                    {
+                        eprintln!("Failed to send central bank embed: {err}");
+                    }
+                });
+
                 Ok(Data {
                     database: db,
                     user_map: DashMap::new(),
