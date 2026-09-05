@@ -49,13 +49,13 @@ pub async fn db_get_shop_channel_id(
 pub async fn db_get_shop_owner_id(
     cid: ChannelId,
     database: &DatabaseConnection,
-) -> Result<Option<i64>, DbErr> {
+) -> Result<Option<UserId>, DbErr> {
     let channel = Channels::find()
         .filter(ChannelsColumn::Cid.eq(cid.get()))
         .one(database)
         .await?;
 
-    Ok(channel.map(|c| c.uid))
+    Ok(channel.map(|c| UserId::new(c.uid.cast_unsigned())))
 }
 
 pub async fn db_delete_shop(uid: UserId, database: &DatabaseConnection) -> Result<bool, DbErr> {

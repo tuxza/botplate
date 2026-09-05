@@ -39,6 +39,11 @@ pub async fn buy(
         return Ok(());
     };
 
+    if quantity <= 0 {
+        ctx.say("quantity gotta be positive.. bum.").await?;
+        return Ok(());
+    }
+
     let item_id = found_item.id;
     let item_quantity = found_item.quantity;
     let acquired_price = found_item.price * quantity;
@@ -70,7 +75,7 @@ pub async fn buy(
         ));
     };
 
-    let uid = UserId::from(owner.cast_unsigned());
+    let uid = UserId::from(owner);
     let amount = acquired_price;
 
     crate::users::db::db_add_balance(uid, amount.into(), database).await?; // database -> signed -> unsigned -> signed -> database

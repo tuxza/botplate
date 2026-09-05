@@ -65,7 +65,21 @@ pub async fn remove(
         return Ok(());
     }
 
-    db_remove_item(cid, name.as_str(), Quantity(quantity), &ctx.data().database).await?;
+    if quantity <= 0 {
+        ctx.say("quantity gotta be positive.. bum.").await?;
+        return Ok(());
+    }
+
+    let removed =
+        db_remove_item(cid, name.as_str(), Quantity(quantity), &ctx.data().database).await?;
+    if !removed {
+        ctx.say(format!(
+            "couldn't remove {quantity}x {name} — not enough stock, or it doesn't exist. (or both)"
+        ))
+        .await?;
+        return Ok(());
+    }
+
     ctx.say(format!("removed {name} x{quantity}")).await?;
     Ok(())
 }
