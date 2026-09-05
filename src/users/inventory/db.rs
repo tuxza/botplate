@@ -24,7 +24,7 @@ pub async fn db_add_inv_item(
         let active_model = InventoryActiveModel {
             uid: Set(UserId64::from(uid).get()),
             item_id: Set(item_id),
-            quantity: Set(Quantity::from(quantity).into()),
+            quantity: Set(quantity.into()),
             acquired_price: Set(acquired_price),
             can_resell: Set(true),
         };

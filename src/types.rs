@@ -41,7 +41,7 @@ impl From<ChannelId> for ChannelId64 {
 
 impl From<ChannelId64> for i64 {
     fn from(cid: ChannelId64) -> Self {
-        cid.0.into()
+        cid.0
     }
 }
 
