@@ -45,17 +45,22 @@ pub fn is_admin(author: u64, admins: &[u64]) -> bool {
 }
 
 pub fn make_numbers_pretty(num: i64) -> String {
-    let s = num.to_string();
-    let mut result = String::new();
+    let negative = num < 0;
+    let s = num.unsigned_abs().to_string();
+    let mut string = String::new();
 
     for (i, ch) in s.chars().rev().enumerate() {
         if i > 0 && i % 3 == 0 {
-            result.push(',');
+            string.push(',');
         }
-        result.push(ch);
+        string.push(ch);
     }
 
-    result.chars().rev().collect()
+    let mut pretty: String = string.chars().rev().collect();
+    if negative {
+        pretty.insert(0, '-');
+    }
+    pretty
 }
 
 pub fn random_footer() -> CreateEmbedFooter {
