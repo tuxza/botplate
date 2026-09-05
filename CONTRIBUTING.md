@@ -43,6 +43,7 @@ This is a pattern throughout the project: a `#[poise::command]`
 function should mostly just parse arguments, call into `helpers.rs`, and format
 a reply. Business logic — math, cooldown checks, validation, etc. — belongs
 in the helper functions so it's reusable outside of a Discord context. (WebUIs, If I may?)
+the few exceptions are say, processing the result of a helper, like shown below.
 
 ```rust
 // good example
@@ -120,13 +121,15 @@ Wow, look at you! You're already doing that!
 
 We use SQLite, so just name a file 'botplate.db' (or whatever.) and point your .env file to it.
 
-(if you need an example of an .env file, see [.env.example](https://github.com/tuxza/botplate/blob/master/.env.example))
+(if you need an example of an .env file, see [.env.example](https://git.tuxzilla.com/tuxza/botplate/src/branch/master/.env.example)))
 
 5. Run SeaORM migrations against the DB:
 
 ```sh
 sea-orm-cli migrate up --database-url sqlite://botplate.db?mode=rwc
 ```
+
+if you dont have `sea-orm-cli` installed, you can install it with `cargo install sea-orm-cli`.
 
 6. Start working!
 
