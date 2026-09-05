@@ -80,7 +80,7 @@ pub fn can_claim_daily(last_daily: Option<i64>) -> bool {
 /// * it returns nothing, lol.. i should fix that.
 pub async fn db_set_last_daily(uid: UserId, timestamp: i64, database: &DatabaseConnection) {
     let active_model = UsersActiveModel {
-        id: Set(uid.into()),
+        id: Set(UserId64::from(uid).get()),
         last_daily: Set(Some(timestamp)),
         ..Default::default()
     };
@@ -147,7 +147,7 @@ pub async fn db_add_balance(
             UsersColumn::Tokens,
             Expr::col(UsersColumn::Tokens).add(amount.0),
         )
-        .filter(UsersColumn::Id.eq(uid.get()))
+        .filter(UsersColumn::Id.eq(UserId64::from(uid)))
         .exec(database)
         .await?;
 
@@ -165,7 +165,7 @@ pub async fn db_deduct_balance(
             UsersColumn::Tokens,
             Expr::col(UsersColumn::Tokens).sub(amount.0),
         )
-        .filter(UsersColumn::Id.eq(uid.get()))
+        .filter(UsersColumn::Id.eq(UserId64::from(uid)))
         .filter(UsersColumn::Tokens.gte(amount.0))
         .exec(database)
         .await?;

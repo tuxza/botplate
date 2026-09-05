@@ -58,12 +58,12 @@ pub async fn db_get_shop_owner_id(
     Ok(channel.map(|c| c.uid))
 }
 
-pub async fn db_delete_shop(uid: UserId, database: &DatabaseConnection) -> Result<(), DbErr> {
-    Channels::delete_many()
+pub async fn db_delete_shop(uid: UserId, database: &DatabaseConnection) -> Result<bool, DbErr> {
+    let result = Channels::delete_many()
         .filter(ChannelsColumn::Uid.eq(UserId64::from(uid)))
         .exec(database)
         .await?;
-    Ok(())
+    Ok(result.rows_affected > 0)
 }
 
 pub async fn db_user_has_shop(uid: UserId, database: &DatabaseConnection) -> Result<bool, DbErr> {

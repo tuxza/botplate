@@ -1,4 +1,4 @@
-# botplate - a discord economy simulator
+# botplate for baseplate - a discord economy simulator
 
 we welcome you to baseplate! a micronation of discordia
 
@@ -6,11 +6,9 @@ we welcome you to baseplate! a micronation of discordia
 
 botplate is the finishing touch to a low effort, not thought out, poorly made discord economy simulator.
 
-We're a bit self deprecating.
+I do think you'll like it here though.
 
-Here's an actual info sheet:
-
-## an actual info sheet
+## info sheet
 
 botplate powers baseplate: the bank, the casino (for some reason.), shops, and like.. everything!
 

@@ -58,7 +58,12 @@ pub async fn delete_shop(
         return Err(Error::Custom("you don't own a shop!".into()));
     };
 
-    db_delete_shop(uid, database).await?;
+    if !db_delete_shop(uid, database).await? {
+        return Err(Error::Custom(
+            "shop row vanished before delete — try again?".into(),
+        ));
+    }
+
     http.delete_channel(channel_id, Some(audit_log_reason))
         .await?;
 
