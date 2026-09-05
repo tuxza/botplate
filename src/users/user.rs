@@ -25,7 +25,7 @@ pub async fn balance(
     let display_name = user.global_name.as_deref().unwrap_or(&user.name);
 
     let balance = db::db_get_balance(uid, &ctx.data().database).await;
-    let balance = make_numbers_pretty(balance);
+    let balance = make_numbers_pretty(balance.into());
     let embed = CreateEmbed::new()
         .title(format!("Balance of {display_name}"))
         .description(format!("{} has {balance} tuxbux.", uid.mention()))
@@ -55,7 +55,7 @@ pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Er
     }
 
     db::db_add_balance(uid, TuxBux(100), &ctx.data().database).await?; // tux reminder: make this configurable because your so nice
-    db::db_set_last_daily(uid, chrono::Utc::now().timestamp(), &ctx.data().database).await;
+    db::db_set_last_daily(uid, chrono::Utc::now().timestamp(), &ctx.data().database).await?;
 
     ctx.say("Claimed 100 tokens!").await?;
     Ok(())

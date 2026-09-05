@@ -71,78 +71,89 @@ pub fn can_claim_daily(last_daily: Option<i64>) -> bool {
 ///
 /// # Arguments
 ///
-/// * `user_id` - The ID of the user.
+/// * [`UserId`] - The ID of the user.
 /// * `timestamp` - The Unix timestamp of the last claim.
-/// * `database` - The database connection.
+/// * `database` - A reference to the active [`DatabaseConnection`].
 ///
 /// # Returns
 ///
-/// * it returns nothing, lol.. i should fix that.
-pub async fn db_set_last_daily(uid: UserId, timestamp: i64, database: &DatabaseConnection) {
+/// * `Ok(true)` if the insertion/update succeeded, or a DB error on failure.
+pub async fn db_set_last_daily(
+    uid: UserId,
+    timestamp: i64,
+    database: &DatabaseConnection,
+) -> Result<bool, DbErr> {
     let active_model = UsersActiveModel {
         id: Set(UserId64::from(uid).get()),
         last_daily: Set(Some(timestamp)),
         ..Default::default()
     };
 
-    let _ = Users::insert(active_model)
+    Users::insert(active_model)
         .on_conflict(
             OnConflict::column(UsersColumn::Id)
                 .update_column(UsersColumn::LastDaily)
                 .to_owned(),
         )
         .exec(database)
-        .await;
+        .await?;
+
+    Ok(true)
 }
 
 /// Gets the balance of a user from the database.
 ///
 /// # Arguments
 ///
-/// * `user_id` - The ID of the user.
-/// * `database` - The database connection.
+/// * [`UserId`] - The ID of the user.
+/// * `database` - A reference to the active [`DatabaseConnection`].
 ///
 /// # Returns
 ///
-/// The user's balance as an `i64` value.
-pub async fn db_get_balance(uid: UserId, database: &DatabaseConnection) -> i64 {
+/// The user's balance as a [`TuxBux`] value.
+pub async fn db_get_balance(uid: UserId, database: &DatabaseConnection) -> TuxBux {
     Users::find_by_id(UserId64::from(uid))
         .one(database)
         .await
         .ok()
         .flatten()
         .map_or(0, |u| u.tokens)
+        .into()
 }
 
 /// Adjusts a user's token balance atomically.
 ///
 /// If the user does not exist in the database, a new record is created with `amount`
-/// as their starting balance. If they already exist, `amount` is added to (or subtracted from)
-/// their current balance.
+/// as their starting balance. If they already exist, `amount` is added to their current balance.
 ///
 /// # Arguments
 ///
-/// * `user_id` - The 64-bit user ID.
-/// * `amount` - The number of tokens to add (positive) or deduct (negative).
+/// * [`UserId`] - User ID
+/// * `amount` - The amount of TuxBux to add.
 /// * `database` - A reference to the active [`DatabaseConnection`].
 ///
 /// # Examples
 ///
 /// ```ignore
 /// // Add 500 tokens
-/// db_add_balance(123456789, 500, &db).await;
+/// db_add_balance(UserId, TuxBux(500), &db).await;
 ///
-/// // Deduct 150 tokens
-/// db_add_balance(123456789, TuxBux(-150), &db).await;
-/// ```
+/// Returns `true` if the balance was successfully updated, `false` otherwise.
 pub async fn db_add_balance(
     uid: UserId,
     amount: TuxBux,
     database: &DatabaseConnection,
-) -> Result<(), DbErr> {
+) -> Result<bool, DbErr> {
+    if amount.0 <= 0 {
+        return Err(DbErr::Custom(
+            "db_add_balance called with a non-positive amount. its not supposed to do that btw"
+                .to_string(),
+        ));
+    }
+
     ensure_user_exists(uid, database).await?;
 
-    Users::update_many()
+    let result = Users::update_many()
         .col_expr(
             UsersColumn::Tokens,
             Expr::col(UsersColumn::Tokens).add(amount.0),
@@ -151,14 +162,36 @@ pub async fn db_add_balance(
         .exec(database)
         .await?;
 
-    Ok(())
+    Ok(result.rows_affected > 0)
 }
 
+/// Deducts a user's token balance atomically.
+///
+/// # Arguments
+///
+/// * `UserId` - User ID, a u64.
+/// * `amount` - The amount of TuxBux to add.
+/// * `database` - A reference to the active [`DatabaseConnection`].
+///
+/// # Examples
+///
+/// ```ignore
+/// // Add 500 tokens
+/// db_deduct_balance(UserId, TuxBux(500), &db).await;
+///
+/// Returns `true` if the balance was successfully deducted, `false` otherwise.
 pub async fn db_deduct_balance(
     uid: UserId,
     amount: TuxBux,
     database: &DatabaseConnection,
 ) -> Result<bool, DbErr> {
+    if amount.0 <= 0 {
+        return Err(DbErr::Custom(
+            "db_deduct_balance called with a non-positive amount, dude these developers SUCK"
+                .to_string(),
+        ));
+    }
+
     ensure_user_exists(uid, database).await?;
     let result = Users::update_many()
         .col_expr(
