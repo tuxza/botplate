@@ -8,6 +8,7 @@ use crate::errors::Error;
 use crate::shops::buy::db::db_remove_item;
 use crate::shops::db::db_verify_shop_owner;
 use crate::shops::sell::db;
+use crate::shops::sell::helpers::validate_item_name;
 use crate::types::{MAX_PRICE, MAX_QUANTITY, Quantity, TuxBux};
 
 /// List an item for sale in your shop.
@@ -21,6 +22,8 @@ pub async fn sell(
 ) -> Result<(), Error> {
     let uid = ctx.author().id;
     let cid = ctx.channel_id();
+
+    validate_item_name(&name, &description)?;
 
     if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;

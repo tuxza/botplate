@@ -8,13 +8,12 @@ use crate::entities::prelude::Users;
 use crate::entities::types::UsersActiveModel;
 use crate::entities::types::UsersColumn;
 use crate::global::ensure_user_exists;
-use crate::types::TuxBux;
-use crate::types::UserId64;
+use crate::types::{MAX_BALANCE, TuxBux, UserId64};
 use dashmap::DashMap;
 use poise::serenity_prelude::UserId;
 use sea_orm::{
     ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
-    sea_query::Expr, sea_query::OnConflict,
+    sea_query::Expr, sea_query::ExprTrait, sea_query::OnConflict,
 };
 
 /// Fetches a Unix timestamp of when the user last claimed their daily reward.
@@ -155,9 +154,14 @@ pub async fn db_add_balance(
     let result = Users::update_many()
         .col_expr(
             UsersColumn::Tokens,
-            Expr::col(UsersColumn::Tokens).add(amount.0),
+            Expr::case(
+                Expr::col(UsersColumn::Tokens).add(amount.0).gt(MAX_BALANCE),
+                MAX_BALANCE,
+            )
+            .finally(Expr::col(UsersColumn::Tokens).add(amount.0))
+            .into(),
         )
-        .filter(UsersColumn::Id.eq(UserId64::from(uid)))
+        .filter(UsersColumn::Id.eq(uid.get()))
         .exec(database)
         .await?;
 

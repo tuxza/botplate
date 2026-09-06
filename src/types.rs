@@ -58,6 +58,8 @@ impl ChannelId64 {
 }
 
 pub const MAX_QUANTITY: i64 = 1_000_000;
+pub const MAX_ITEM_NAME_LENGTH: usize = 256;
+pub const MAX_DESCRIPTION_LENGTH: usize = 4096;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Quantity(pub i64);
@@ -86,7 +88,8 @@ impl From<Quantity> for sea_orm::Value {
     }
 }
 
-pub const MAX_PRICE: i64 = 100_000_000;
+pub const MAX_PRICE: i64 = 10_000_000;
+pub const MAX_BALANCE: i64 = 1_000_000_000_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TuxBux(pub i64);
