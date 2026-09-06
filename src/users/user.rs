@@ -98,6 +98,11 @@ pub async fn gamble(
     ctx: poise::Context<'_, crate::Data, Error>,
     #[description = "how many tuxbux to gamble"] wager: i64,
 ) -> Result<(), Error> {
+    if wager <= 0 {
+        ctx.say("gotta gamble a positive amount, bum.").await?;
+        return Ok(());
+    }
+
     let uid = UserId::from(ctx.author().id.get());
     let wager = TuxBux(wager);
     let deducted = db::db_deduct_balance(uid, wager, &ctx.data().database).await?;
