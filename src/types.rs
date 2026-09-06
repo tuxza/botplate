@@ -57,12 +57,20 @@ impl ChannelId64 {
     }
 }
 
+pub const MAX_QUANTITY: i64 = 1_000_000;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Quantity(pub i64);
 
 impl Quantity {
     pub fn get(self) -> i64 {
         self.0
+    }
+}
+
+impl std::fmt::Display for Quantity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
@@ -77,6 +85,8 @@ impl From<Quantity> for sea_orm::Value {
         id.0.into()
     }
 }
+
+pub const MAX_PRICE: i64 = 100_000_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TuxBux(pub i64);

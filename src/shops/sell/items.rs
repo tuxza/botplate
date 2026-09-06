@@ -8,7 +8,7 @@ use crate::errors::Error;
 use crate::shops::buy::db::db_remove_item;
 use crate::shops::db::db_verify_shop_owner;
 use crate::shops::sell::db;
-use crate::types::{Quantity, TuxBux};
+use crate::types::{MAX_PRICE, MAX_QUANTITY, Quantity, TuxBux};
 
 /// List an item for sale in your shop.
 #[poise::command(slash_command, prefix_command)]
@@ -30,6 +30,14 @@ pub async fn sell(
     if price <= 0 || quantity <= 0 {
         ctx.say("price and quantity gotta be positive.. bum.")
             .await?;
+        return Ok(());
+    }
+
+    if price > MAX_PRICE || quantity > MAX_QUANTITY {
+        ctx.say(format!(
+            "keep it reasonable — price under {MAX_PRICE} and quantity under {MAX_QUANTITY}."
+        ))
+        .await?;
         return Ok(());
     }
 
