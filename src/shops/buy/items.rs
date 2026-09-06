@@ -54,10 +54,9 @@ pub async fn buy(
         return Ok(());
     }
 
-    let amount = -acquired_price;
     let database = &ctx.data().database;
 
-    crate::users::db::db_deduct_balance(uid, TuxBux(amount), database).await?;
+    crate::users::db::db_deduct_balance(uid, TuxBux(acquired_price), database).await?;
 
     db_add_inv_item(
         uid,
@@ -76,9 +75,8 @@ pub async fn buy(
     };
 
     let uid = UserId::from(owner);
-    let amount = acquired_price;
 
-    crate::users::db::db_add_balance(uid, amount.into(), database).await?; // database -> signed -> unsigned -> signed -> database
+    crate::users::db::db_add_balance(uid, TuxBux(acquired_price), database).await?; // database -> signed -> unsigned -> signed -> database
     db_remove_item(
         cid,
         &found_item.name,

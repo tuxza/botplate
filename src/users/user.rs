@@ -25,7 +25,7 @@ pub async fn balance(
     let display_name = user.global_name.as_deref().unwrap_or(&user.name);
 
     let balance = db::db_get_balance(uid, &ctx.data().database).await;
-    let balance = make_numbers_pretty(balance.into());
+    let balance = make_numbers_pretty(balance.unwrap_or(TuxBux(0)).into());
     let embed = CreateEmbed::new()
         .title(format!("Balance of {display_name}"))
         .description(format!("{} has {balance} tuxbux.", uid.mention()))

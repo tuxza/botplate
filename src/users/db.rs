@@ -111,14 +111,13 @@ pub async fn db_set_last_daily(
 /// # Returns
 ///
 /// The user's balance as a [`TuxBux`] value.
-pub async fn db_get_balance(uid: UserId, database: &DatabaseConnection) -> TuxBux {
-    Users::find_by_id(UserId64::from(uid))
+pub async fn db_get_balance(uid: UserId, database: &DatabaseConnection) -> Result<TuxBux, DbErr> {
+    let balance = Users::find_by_id(UserId64::from(uid).get())
         .one(database)
-        .await
-        .ok()
-        .flatten()
-        .map_or(0, |u| u.tokens)
-        .into()
+        .await?
+        .map_or(TuxBux(0), |u| TuxBux(u.tokens));
+
+    Ok(balance)
 }
 
 /// Adjusts a user's token balance atomically.
