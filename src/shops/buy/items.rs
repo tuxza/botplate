@@ -8,8 +8,6 @@ use crate::shops::buy::db::db_remove_item;
 use crate::shops::db::db_verify_shop_exists;
 use crate::users::inventory::db::db_add_inv_item;
 
-use poise::serenity_prelude::UserId;
-
 use crate::{
     errors::Error,
     shops::buy::db::db_get_item,
@@ -74,7 +72,7 @@ pub async fn buy(
         ));
     };
 
-    let uid = UserId::from(owner);
+    let uid = owner;
 
     crate::users::db::db_add_balance(uid, TuxBux(acquired_price), database).await?; // database -> signed -> unsigned -> signed -> database
     db_remove_item(

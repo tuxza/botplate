@@ -127,7 +127,7 @@ pub async fn db_get_balance(uid: UserId, database: &DatabaseConnection) -> Resul
 /// # Arguments
 ///
 /// * [`UserId`] - User ID
-/// * `amount` - The amount of TuxBux to add.
+/// * `amount` - The amount of `TuxBux` to add.
 /// * `database` - A reference to the active [`DatabaseConnection`].
 ///
 /// # Examples
@@ -173,7 +173,7 @@ pub async fn db_add_balance(
 /// # Arguments
 ///
 /// * `UserId` - User ID, a u64.
-/// * `amount` - The amount of TuxBux to add.
+/// * `amount` - The amount of `TuxBux` to add.
 /// * `database` - A reference to the active [`DatabaseConnection`].
 ///
 /// # Examples

@@ -100,11 +100,11 @@ async fn main() -> Result<(), errors::Error> {
                 let database = db.clone();
 
                 tokio::spawn(async move {
-                    if let Err(err) =
+                    if let Err(error) =
                         events::central_bank::send_bank_embed(&http, target_channel, &database)
                             .await
                     {
-                        eprintln!("Failed to send central bank embed: {err}");
+                        eprintln!("failed to update central bank: {error}");
                     }
                 });
 

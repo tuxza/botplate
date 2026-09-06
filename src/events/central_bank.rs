@@ -4,7 +4,7 @@
 // /src/events/central_bank.rs
 #![allow(clippy::unreadable_literal)]
 use crate::entities;
-use crate::errors;
+use crate::errors::Error;
 use crate::global::make_numbers_pretty;
 use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::ChannelId;
@@ -14,20 +14,21 @@ use poise::serenity_prelude::GetMessages;
 use sea_orm::DatabaseConnection;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
-async fn get_money_get_bread(database: &DatabaseConnection) -> String {
+async fn get_money_get_bread(database: &DatabaseConnection) -> Result<String, Error> {
     let central_bank = entities::central_bank::Entity::find()
         .filter(entities::central_bank::Column::Id.eq(1))
         .one(database)
-        .await
-        .unwrap_or_default();
+        .await?;
+
     let balance = central_bank.map_or(0, |bank| bank.balance);
-    make_numbers_pretty(balance)
+
+    Ok(make_numbers_pretty(balance))
 }
 
 /// Deletes every message in the channel, bulk-deleting where possible
 /// (Discord only allows bulk delete on messages < 14 days old, 2-100 at a time)
 /// and falling back to one-by-one deletion for anything older.
-async fn purge_channel(http: &serenity::Http, channel_id: ChannelId) -> Result<(), errors::Error> {
+async fn purge_channel(http: &serenity::Http, channel_id: ChannelId) -> Result<(), Error> {
     loop {
         let messages = channel_id
             .messages(http, GetMessages::new().limit(100))
@@ -69,10 +70,10 @@ pub async fn send_bank_embed(
     http: &serenity::Http,
     channel_id: ChannelId,
     database: &DatabaseConnection,
-) -> Result<serenity::Message, errors::Error> {
+) -> Result<(), Error> {
     purge_channel(http, channel_id).await?;
 
-    let central_bank = get_money_get_bread(database).await;
+    let central_bank = get_money_get_bread(database).await?;
     let embed = CreateEmbed::new()
         .title("central bank")
         .description(format!("tuxbux reserves: {central_bank}"))
@@ -95,7 +96,8 @@ pub async fn send_bank_embed(
         .footer(
             poise::serenity_prelude::CreateEmbedFooter::new(format!("botplate-rs | botplate reimagined | {}", env!("CARGO_PKG_VERSION"))),
         );
-    Ok(channel_id
+    channel_id
         .send_message(http, CreateMessage::new().embed(embed))
-        .await?)
+        .await?;
+    Ok(())
 }

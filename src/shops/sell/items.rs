@@ -23,7 +23,7 @@ pub async fn sell(
     let uid = ctx.author().id;
     let cid = ctx.channel_id();
 
-    validate_item_name(&name, &description)?;
+    validate_item_name(&name, description.as_deref())?;
 
     if !db_verify_shop_owner(uid, cid, &ctx.data().database).await? {
         ctx.say("this isn't your shop!").await?;
@@ -38,7 +38,7 @@ pub async fn sell(
 
     if price > MAX_PRICE || quantity > MAX_QUANTITY {
         ctx.say(format!(
-            "keep it reasonable — price under {MAX_PRICE} and quantity under {MAX_QUANTITY}."
+            "keep it reasonable - price under {MAX_PRICE} and quantity under {MAX_QUANTITY}."
         ))
         .await?;
         return Ok(());

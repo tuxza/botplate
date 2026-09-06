@@ -2,7 +2,7 @@ use crate::errors::Error;
 use crate::types::MAX_DESCRIPTION_LENGTH;
 use crate::types::MAX_ITEM_NAME_LENGTH;
 
-pub fn validate_item_name(name: &str, description: &Option<String>) -> Result<(), Error> {
+pub fn validate_item_name(name: &str, description: Option<&str>) -> Result<(), Error> {
     if name.is_empty() {
         return Err(Error::Custom(
             "How the hell did you even pass this empty??".to_string(),
