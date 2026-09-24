@@ -6,6 +6,7 @@
 
 use crate::shops::buy::db::db_remove_item;
 use crate::shops::db::db_verify_shop_exists;
+use crate::types::MAX_QUANTITY;
 use crate::users::inventory::db::db_add_inv_item;
 
 use crate::{
@@ -42,6 +43,15 @@ pub async fn buy(
         return Ok(());
     }
 
+    if quantity > MAX_QUANTITY {
+        ctx.say(format!(
+            "You can't buy more than {} of `{}`.",
+            MAX_QUANTITY, found_item.name
+        ))
+        .await?;
+        return Ok(());
+    }
+
     let item_id = found_item.id;
     let item_quantity = found_item.quantity;
     let acquired_price = found_item.price * quantity;
@@ -54,7 +64,12 @@ pub async fn buy(
 
     let database = &ctx.data().database;
 
-    crate::users::db::db_deduct_balance(uid, TuxBux(acquired_price), database).await?;
+    let result = crate::users::db::db_deduct_balance(uid, TuxBux(acquired_price), database).await?;
+    if !result {
+        ctx.say("You don't have enough cash to buy this item.")
+            .await?;
+        return Ok(());
+    }
 
     db_add_inv_item(
         uid,

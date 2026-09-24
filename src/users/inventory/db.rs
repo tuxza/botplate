@@ -1,7 +1,8 @@
-use sea_orm::{ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait};
+use sea_orm::{ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait, sea_query};
 
 use crate::entities::prelude::Inventory;
 use crate::entities::types::InventoryActiveModel;
+use crate::entities::types::InventoryColumn;
 use crate::types::{Quantity, UserId64};
 use poise::serenity_prelude::UserId;
 
@@ -12,24 +13,25 @@ pub async fn db_add_inv_item(
     acquired_price: i64,
     database: &DatabaseConnection,
 ) -> Result<(), DbErr> {
-    let existing = Inventory::find_by_id((UserId64::from(uid).get(), item_id))
-        .one(database)
-        .await?;
+    let active_model = InventoryActiveModel {
+        uid: Set(UserId64::from(uid).get()),
+        item_id: Set(item_id),
+        quantity: Set(quantity.into()),
+        acquired_price: Set(acquired_price),
+        can_resell: Set(true),
+    };
 
-    if let Some(model) = existing {
-        let mut active_model: InventoryActiveModel = model.clone().into();
-        active_model.quantity = Set(model.quantity + quantity.0);
-        Inventory::update(active_model).exec(database).await?;
-    } else {
-        let active_model = InventoryActiveModel {
-            uid: Set(UserId64::from(uid).get()),
-            item_id: Set(item_id),
-            quantity: Set(quantity.into()),
-            acquired_price: Set(acquired_price),
-            can_resell: Set(true),
-        };
-        Inventory::insert(active_model).exec(database).await?;
-    }
+    Inventory::insert(active_model)
+        .on_conflict(
+            sea_query::OnConflict::columns([InventoryColumn::Uid, InventoryColumn::ItemId])
+                .value(
+                    InventoryColumn::Quantity,
+                    sea_query::Expr::cust("inventory.quantity + excluded.quantity"),
+                )
+                .to_owned(),
+        )
+        .exec(database)
+        .await?;
 
     Ok(())
 }

@@ -190,7 +190,7 @@ pub async fn db_deduct_balance(
 ) -> Result<bool, DbErr> {
     if amount.0 <= 0 {
         return Err(DbErr::Custom(
-            "db_deduct_balance called with a non-positive amount, dude these developers SUCK"
+            "db_deduct_balance called with a positive amount, dude these developers SUCK"
                 .to_string(),
         ));
     }

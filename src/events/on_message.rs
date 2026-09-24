@@ -65,6 +65,7 @@ pub async fn on_message(
     }
 
     if leveled_up {
+        crate::global::ensure_user_exists(uid, database).await?; // note to self, this should be a borrow.
         level_up(uid, new_xp, new_level, database).await?;
 
         let tokens_earned = rand::rng().random_range(1..=100);
