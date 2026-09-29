@@ -46,7 +46,7 @@ pub async fn db_get_shop_channel_id(
     Ok(channel.map(|c| ChannelId::new(c.cid.cast_unsigned())))
 }
 
-pub async fn db_get_shop_owner_id(
+pub async fn _db_get_shop_owner_id(
     cid: ChannelId,
     database: &DatabaseConnection,
 ) -> Result<Option<UserId>, DbErr> {

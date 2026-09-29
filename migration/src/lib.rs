@@ -6,6 +6,7 @@ mod m20260722_000003_create_channels;
 mod m20260722_000004_create_items;
 mod m20260722_000005_create_inventory;
 mod m20260929_200035_add_tax_column_to_users;
+mod m20260929_221919_edit_itemid_to_i64;
 
 pub struct Migrator;
 

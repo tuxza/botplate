@@ -6,7 +6,7 @@ use crate::entities::types::InventoryColumn;
 use crate::types::{Quantity, UserId64};
 use poise::serenity_prelude::UserId;
 
-pub async fn db_add_inv_item(
+pub async fn _db_add_inv_item(
     uid: UserId,
     item_id: i64,
     quantity: Quantity,
