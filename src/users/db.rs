@@ -76,12 +76,12 @@ pub fn can_claim_daily(last_daily: Option<i64>) -> bool {
 ///
 /// # Returns
 ///
-/// * `Ok(true)` if the insertion/update succeeded, or a DB error on failure.
+/// * `Ok()` if the insertion/update succeeded, or a DB error on failure.
 pub async fn db_set_last_daily(
     uid: UserId,
     timestamp: i64,
     database: &DatabaseConnection,
-) -> Result<bool, DbErr> {
+) -> Result<(), DbErr> {
     let active_model = UsersActiveModel {
         id: Set(UserId64::from(uid).get()),
         last_daily: Set(Some(timestamp)),
@@ -97,7 +97,7 @@ pub async fn db_set_last_daily(
         .exec(database)
         .await?;
 
-    Ok(true)
+    Ok(())
 }
 
 /// Gets the balance of a user from the database.
@@ -222,12 +222,13 @@ pub async fn get_user_xp_and_level(
     user_map: &DashMap<UserId, (i64, i64, i64)>,
     database: &DatabaseConnection,
 ) -> Result<(i64, i64, i64), DbErr> {
+    ensure_user_exists(uid, database).await?;
     if let Some(entry) = user_map.get(&uid) {
         return Ok(*entry);
     }
 
     let user = Users::find_by_id(uid).one(database).await?;
-    let rank = user.map_or((0, 0, 0), |u| (u.xp, u.level, u.tokens));
+    let rank = user.map_or((0, 0, 0), |u| (u.xp, u.level, u.message_count));
 
     user_map.insert(uid, rank);
 

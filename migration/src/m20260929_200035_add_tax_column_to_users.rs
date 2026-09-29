@@ -10,7 +10,7 @@ impl MigrationTrait for Migration {
             .alter_table(
                 Table::alter()
                     .table(Users::Table)
-                    .add_column(integer(Users::Tax).default(0))
+                    .add_column(big_integer(Users::Tax).default(0))
                     .to_owned(),
             )
             .await?;
@@ -19,7 +19,7 @@ impl MigrationTrait for Migration {
             .alter_table(
                 Table::alter()
                     .table(Users::Table)
-                    .add_column(integer(Users::MessageCount).default(0))
+                    .add_column(big_integer(Users::MessageCount).default(0))
                     .to_owned(),
             )
             .await

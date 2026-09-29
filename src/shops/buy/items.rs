@@ -73,7 +73,7 @@ pub async fn buy(
 
     db_add_inv_item(
         uid,
-        item_id,
+        item_id.into(),
         Quantity(quantity),
         acquired_price,
         &ctx.data().database,

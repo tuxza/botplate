@@ -28,6 +28,8 @@ pub async fn ensure_user_exists(uid: UserId, database: &DatabaseConnection) -> R
         spouse: Set(None),
         spouse_since: Set(None),
         joint_balance: Set(None),
+        tax: Set(0),
+        message_count: Set(0),
     };
 
     Users::insert(active_model)
