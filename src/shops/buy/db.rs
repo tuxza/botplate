@@ -19,7 +19,6 @@ use crate::entities::types::{InventoryActiveModel, InventoryColumn, UsersColumn}
 use crate::types::UserId64;
 use poise::serenity_prelude::UserId;
 use sea_orm::TransactionError;
-use sea_orm::sea_query::OnConflict;
 use sea_orm::{ActiveValue::Set, TransactionTrait};
 
 // note to anyone reading this code, this was written by codex using GPT-5.6 Luna

@@ -41,21 +41,10 @@ pub async fn balance(
 #[poise::command(prefix_command, slash_command)]
 pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let uid = ctx.author().id;
-    let last_daily = db::db_last_daily(uid, &ctx.data().database)
-        .await
-        .unwrap_or(0);
 
-    if !db::can_claim_daily(Some(last_daily)) {
-        let next_daily = last_daily + 86_400;
-        ctx.say(format!(
-            "you already claimed your daily today! come back <t:{next_daily}:R>"
-        ))
-        .await?;
-        return Ok(());
-    }
+    db::can_claim_daily(uid, &ctx.data().database).await?;
 
     db::db_add_balance(uid, TuxBux(100), &ctx.data().database).await?; // tux reminder: make this configurable because your so nice
-    db::db_set_last_daily(uid, chrono::Utc::now().timestamp(), &ctx.data().database).await?;
 
     ctx.say("Claimed 100 tokens!").await?;
     Ok(())

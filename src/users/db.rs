@@ -5,99 +5,46 @@
 // src/users/helpers.rs
 
 use crate::entities::prelude::Users;
-use crate::entities::types::UsersActiveModel;
 use crate::entities::types::UsersColumn;
 use crate::global::ensure_user_exists;
 use crate::types::{MAX_BALANCE, TuxBux, UserId64};
 use dashmap::DashMap;
 use poise::serenity_prelude::UserId;
 use sea_orm::{
-    ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter,
-    sea_query::Expr, sea_query::ExprTrait, sea_query::OnConflict,
+    ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter, sea_query::Expr,
+    sea_query::ExprTrait,
 };
 
-/// Fetches a Unix timestamp of when the user last claimed their daily reward.
-///
-/// # Arguments
-///
-/// * `uid` - The 64-bit Discord ID (or general user ID) of the target user.
-/// * `database` - A reference to the active [`DatabaseConnection`].
-///
-/// # Returns
-///
-/// * `Some(i64)` - Unix timestamp (in seconds) if the user exists and has claimed a daily before.
-/// * `None` - If the user has never claimed a daily reward or doesn't exist yet.
-///
-/// # Examples
-///
-/// ```rust
-/// let timestamp = db_last_daily(123456789012345678, &db).await;
-/// if let Some(ts) = timestamp {
-///     println!("Last claimed at: {ts}");
-/// }
-/// ```
-pub async fn db_last_daily(uid: UserId, database: &DatabaseConnection) -> Option<i64> {
-    Users::find_by_id(uid)
-        .one(database)
-        .await
-        .ok()
-        .flatten()
-        .and_then(|u| u.last_daily)
-}
-
-/// Checks whether a user is eligible to claim a daily reward based on their last claim timestamp.
-///
-/// Requires 24 hours (86,400 seconds) to have elapsed since the previous claim.
-///
-/// # Arguments
-///
-/// * `last_daily` - An `Option<i64>` containing the Unix timestamp of the last claim.
-///
-/// # Returns
-///
-/// * `true` - If `last_daily` is `None` or if 24+ hours have passed.
-/// * `false` - If the cooldown is still active.
-pub fn can_claim_daily(last_daily: Option<i64>) -> bool {
-    let Some(last_claim) = last_daily else {
-        return true;
-    };
+// Claims a daily reward if the previous claim was at least 24 hours ago.
+//
+// # Arguments
+//
+// * [`UserId`] - The ID of the user.
+// * `database` - A reference to the active [`DatabaseConnection`].
+//
+// # Returns
+//
+// * `true` if the claim was recorded.
+// * `false` if the user does not exist or the cooldown has not elapsed.
+pub async fn can_claim_daily(uid: UserId, database: &DatabaseConnection) -> Result<bool, DbErr> {
+    ensure_user_exists(uid, database).await?;
 
     let now = chrono::Utc::now().timestamp();
-    now - last_claim >= 86_400
-}
+    let cutoff = now - 86_400;
+    let user_id = UserId64::from(uid).get();
 
-/// Sets the last daily claim timestamp for a user in the database.
-///
-/// # Arguments
-///
-/// * [`UserId`] - The ID of the user.
-/// * `timestamp` - The Unix timestamp of the last claim.
-/// * `database` - A reference to the active [`DatabaseConnection`].
-///
-/// # Returns
-///
-/// * `Ok()` if the insertion/update succeeded, or a DB error on failure.
-pub async fn db_set_last_daily(
-    uid: UserId,
-    timestamp: i64,
-    database: &DatabaseConnection,
-) -> Result<(), DbErr> {
-    let active_model = UsersActiveModel {
-        id: Set(UserId64::from(uid).get()),
-        last_daily: Set(Some(timestamp)),
-        ..Default::default()
-    };
-
-    Users::insert(active_model)
-        .on_conflict(
-            OnConflict::column(UsersColumn::Id)
-                .update_column(UsersColumn::LastDaily)
-                .to_owned(),
+    let updated = Users::update_many()
+        .col_expr(UsersColumn::LastDaily, Expr::value(now))
+        .filter(UsersColumn::Id.eq(user_id))
+        .filter(
+            UsersColumn::LastDaily
+                .is_null()
+                .or(UsersColumn::LastDaily.lte(cutoff)),
         )
         .exec(database)
         .await?;
 
-    Ok(())
+    Ok(updated.rows_affected > 0)
 }
 
 /// Gets the balance of a user from the database.
