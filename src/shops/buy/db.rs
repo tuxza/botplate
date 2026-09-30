@@ -9,7 +9,7 @@ use crate::entities::items::Model;
 use crate::entities::prelude::Items;
 use crate::entities::types::ItemsColumn;
 use crate::types::{ChannelId64, Quantity};
-use sea_orm::sea_query::Expr;
+use sea_orm::sea_query::{Expr, OnConflict};
 use sea_orm::{ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 
 use poise::serenity_prelude::ChannelId;
