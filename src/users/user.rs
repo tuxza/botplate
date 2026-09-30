@@ -10,7 +10,7 @@ use poise::serenity_prelude::{CreateEmbed, Mentionable, UserId};
 use crate::errors::Error;
 use crate::global::{make_numbers_pretty, random_footer};
 use crate::types::TuxBux;
-use crate::users::db;
+use crate::users::db::*;
 
 /// check your balance
 #[poise::command(prefix_command, slash_command)]
@@ -24,7 +24,7 @@ pub async fn balance(
 
     let display_name = user.global_name.as_deref().unwrap_or(&user.name);
 
-    let balance = db::db_get_balance(uid, &ctx.data().database).await;
+    let balance = db_get_balance(uid, &ctx.data().database).await;
     let balance = make_numbers_pretty(balance.unwrap_or(TuxBux(0)).into());
     let embed = CreateEmbed::new()
         .title(format!("Balance of {display_name}"))
@@ -42,11 +42,19 @@ pub async fn balance(
 pub async fn daily(ctx: poise::Context<'_, crate::Data, Error>) -> Result<(), Error> {
     let uid = ctx.author().id;
 
-    db::can_claim_daily(uid, &ctx.data().database).await?;
+    match claim_daily(uid, &ctx.data().database).await? {
+        None => {
+            db_add_balance(uid, TuxBux(100), &ctx.data().database).await?;
+            ctx.say("Claimed 100 tokens!").await?;
+        }
 
-    db::db_add_balance(uid, TuxBux(100), &ctx.data().database).await?; // tux reminder: make this configurable because your so nice
-
-    ctx.say("Claimed 100 tokens!").await?;
+        Some(next_claim) => {
+            ctx.say(format!(
+                "You already claimed your daily reward. You can claim again <t:{next_claim}:R>."
+            ))
+            .await?;
+        }
+    }
     Ok(())
 }
 
@@ -63,7 +71,7 @@ pub async fn rank(
     let display_name = user.global_name.as_deref().unwrap_or(&user.name);
 
     let (xp, level, _) =
-        db::get_user_xp_and_level(uid, &ctx.data().user_map, &ctx.data().database).await?;
+        get_user_xp_and_level(uid, &ctx.data().user_map, &ctx.data().database).await?;
 
     let embed = CreateEmbed::new()
         .title(format!("Rank for {display_name}"))
@@ -94,7 +102,7 @@ pub async fn gamble(
 
     let uid = UserId::from(ctx.author().id.get());
     let wager = TuxBux(wager);
-    let deducted = db::db_deduct_balance(uid, wager, &ctx.data().database).await?;
+    let deducted = db_deduct_balance(uid, wager, &ctx.data().database).await?;
     if !deducted {
         ctx.say(format!("you don't have {wager} tuxbux to gamble!"))
             .await?;
@@ -104,7 +112,7 @@ pub async fn gamble(
     let won = rand::random::<bool>();
     if won {
         let payout = wager * TuxBux(2);
-        db::db_add_balance(uid, payout, &ctx.data().database).await?;
+        db_add_balance(uid, payout, &ctx.data().database).await?;
         ctx.say(format!("you won! +{wager} tuxbux")).await?;
     } else {
         ctx.say(format!("you lost! -{wager} tuxaroos")).await?;

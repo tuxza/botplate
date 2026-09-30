@@ -24,9 +24,9 @@ use sea_orm::{
 //
 // # Returns
 //
-// * `true` if the claim was recorded.
-// * `false` if the user does not exist or the cooldown has not elapsed.
-pub async fn can_claim_daily(uid: UserId, database: &DatabaseConnection) -> Result<bool, DbErr> {
+// * `Some(timestamp)` if the claim was recorded.
+// * `None` if the user does not exist or the cooldown hasn't finished.
+pub async fn claim_daily(uid: UserId, database: &DatabaseConnection) -> Result<Option<i64>, DbErr> {
     ensure_user_exists(uid, database).await?;
 
     let now = chrono::Utc::now().timestamp();
@@ -44,7 +44,16 @@ pub async fn can_claim_daily(uid: UserId, database: &DatabaseConnection) -> Resu
         .exec(database)
         .await?;
 
-    Ok(updated.rows_affected > 0)
+    if updated.rows_affected > 0 {
+        return Ok(None);
+    }
+
+    let last_daily = Users::find_by_id(user_id)
+        .one(database)
+        .await?
+        .and_then(|user| user.last_daily);
+
+    Ok(last_daily.map(|last| last + 86_400))
 }
 
 /// Gets the balance of a user from the database.
